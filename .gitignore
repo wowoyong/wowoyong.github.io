@@ -25,3 +25,7 @@ package-lock.json
 # Misc
 _sass/vendors
 assets/js/dist
+
+# Scripts (Mac Mini local only)
+scripts/daily-digest.log
+scripts/.prompt-tmp.txt
