@@ -11,8 +11,17 @@ const CLAUDE    = '/opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.
 const BLOG_DIR  = '/Users/jojaeyong/WebstormProjects/wowoyong.github.io';
 const SSH_KEY   = '/Users/jojaeyong/.ssh/id_ed25519_wowoyong_new';
 const NODE      = path.join(NODE_BIN, 'node');
-
 const DRY_RUN   = process.argv.includes('--dry-run');
+
+// config.env 로드 (API 키 등 로컬 설정)
+const configPath = path.join(__dirname, 'config.env');
+if (fs.existsSync(configPath)) {
+  fs.readFileSync(configPath, 'utf8').split('\n').forEach(line => {
+    const eq = line.indexOf('=');
+    if (eq > 0) process.env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+  });
+}
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 
 // ─── Fetch Helpers ────────────────────────────────────────────────────────────
 async function fetchJSON(url) {
@@ -26,19 +35,18 @@ async function fetchJSON(url) {
 
 // ─── Data Sources ─────────────────────────────────────────────────────────────
 
-// Hacker News: AI/LLM 관련 뉴스
+// Hacker News: 풀스택 개발자 관점 AI 뉴스
 async function fetchHackerNews(sinceTs) {
-  const url = [
-    'https://hn.algolia.com/api/v1/search',
-    '?tags=story',
-    '&query=AI+LLM+GPT+Claude+Gemini+machine+learning+deep+learning',
-    `&numericFilters=created_at_i>${sinceTs},points>2`,
-    '&hitsPerPage=15',
-    '&attributesToRetrieve=title,url,points,objectID'
-  ].join('');
-
-  const data = await fetchJSON(url);
-  return (data.hits || []).map(h => ({
+  // 두 쿼리 병렬 실행 후 병합
+  const base = 'https://hn.algolia.com/api/v1/search?tags=story&hitsPerPage=10&attributesToRetrieve=title,url,points,objectID';
+  const filter = `&numericFilters=created_at_i>${sinceTs},points>1`;
+  const [r1, r2] = await Promise.all([
+    fetchJSON(`${base}&query=AI+developer${filter}`),
+    fetchJSON(`${base}&query=ChatGPT+Claude+Gemini+OpenAI${filter}`),
+  ]);
+  const all = [...(r1.hits || []), ...(r2.hits || [])];
+  const unique = [...new Map(all.map(h => [h.objectID, h])).values()];
+  return unique.map(h => ({
     type: 'news',
     title: h.title,
     url: h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
@@ -47,34 +55,103 @@ async function fetchHackerNews(sinceTs) {
   }));
 }
 
-// GitHub: 최근 업데이트된 AI/LLM 레포
+// GitHub: 개발자가 쓰는 AI 도구 레포 (토픽별 개별 쿼리 후 병합)
 async function fetchGitHub(since) {
   const dateStr = since.toISOString().slice(0, 10);
-  const url = [
-    'https://api.github.com/search/repositories',
-    `?q=topic:llm+pushed:>${dateStr}`,
-    '&sort=stars&order=desc&per_page=10'
-  ].join('');
+  const topics = ['openai', 'chatgpt', 'langchain', 'claude-api'];
+  const base = 'https://api.github.com/search/repositories';
+  const results = await Promise.all(
+    topics.map(t =>
+      fetchJSON(`${base}?q=topic:${t}+pushed:>${dateStr}&sort=stars&order=desc&per_page=5`)
+        .catch(() => ({ items: [] }))
+    )
+  );
+  const all = results.flatMap(r => r.items || []);
+  const unique = [...new Map(all.map(r => [r.full_name, r])).values()];
+  return unique
+    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+    .slice(0, 8)
+    .map(r => ({
+      type: 'github',
+      name: r.full_name,
+      description: r.description || '',
+      url: r.html_url,
+      stars: r.stargazers_count,
+      language: r.language || '',
+      source: 'GitHub'
+    }));
+}
 
-  const data = await fetchJSON(url);
-  return (data.items || []).slice(0, 8).map(r => ({
-    type: 'github',
-    name: r.full_name,
-    description: r.description || '',
-    url: r.html_url,
-    stars: r.stargazers_count,
-    language: r.language || '',
-    source: 'GitHub'
-  }));
+// YouTube: AI 개발 관련 인기 영상 (최근 7일, 조회수 순)
+async function fetchYouTube(since) {
+  if (!YOUTUBE_API_KEY) { console.warn('[YouTube] API 키 없음, 건너뜀'); return []; }
+
+  // 7일 전부터 검색 (조회수가 쌓일 시간 필요)
+  const weekAgo = new Date(since.getTime() - 6 * 24 * 60 * 60 * 1000);
+  const publishedAfter = weekAgo.toISOString();
+
+  const queries = [
+    'ChatGPT API tutorial developer 2026',
+    'Claude Anthropic API developer guide',
+    'Gemini Google AI fullstack developer',
+    'OpenAI LLM fullstack application build'
+  ];
+
+  const allItems = [];
+  for (const q of queries) {
+    try {
+      const searchUrl = [
+        'https://www.googleapis.com/youtube/v3/search',
+        `?part=snippet&q=${encodeURIComponent(q)}`,
+        `&type=video&order=viewCount`,
+        `&publishedAfter=${publishedAfter}`,
+        `&maxResults=3&key=${YOUTUBE_API_KEY}`
+      ].join('');
+      const data = await fetchJSON(searchUrl);
+      if (data.items) allItems.push(...data.items);
+    } catch (e) {
+      console.warn(`[YouTube] 검색 실패: ${q} — ${e.message}`);
+    }
+  }
+
+  if (allItems.length === 0) return [];
+
+  // 중복 제거
+  const unique = [...new Map(allItems.map(v => [v.id.videoId, v])).values()];
+
+  // 조회수 가져오기
+  const ids = unique.map(v => v.id.videoId).join(',');
+  const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${ids}&key=${YOUTUBE_API_KEY}`;
+  const statsData = await fetchJSON(statsUrl);
+
+  return (statsData.items || [])
+    .sort((a, b) => parseInt(b.statistics.viewCount || 0) - parseInt(a.statistics.viewCount || 0))
+    .slice(0, 5)
+    .map(v => ({
+      type: 'youtube',
+      title: v.snippet.title,
+      channel: v.snippet.channelTitle,
+      url: `https://www.youtube.com/watch?v=${v.id}`,
+      views: parseInt(v.statistics.viewCount || 0),
+      published: v.snippet.publishedAt.slice(0, 10),
+      source: 'YouTube'
+    }));
 }
 
 // ─── Claude 요약 ──────────────────────────────────────────────────────────────
-function summarize(news, github, dateStr) {
-  const prompt = `당신은 AI 데일리 블로그 작성자입니다.
+function summarize(news, github, youtube, dateStr) {
+  const youtubeSection = youtube.length > 0
+    ? `\n[이번 주 YouTube 인기 영상]\n${JSON.stringify(youtube, null, 2)}`
+    : '';
+
+  const prompt = `당신은 풀스택 개발자를 위한 AI 데일리 블로그 작성자입니다.
 도구를 절대 사용하지 마세요. 마크다운 텍스트만 직접 출력하세요.
 
 ${dateStr} AI 데일리 블로그 포스트 본문을 아래 데이터로 작성해주세요.
 front matter 없이 본문만 작성하세요.
+
+독자: ChatGPT, Claude, Gemini 등 AI API를 활용하는 풀스택 개발자.
+관점: "이 소식이 개발에 어떤 영향을 주는가?" 중심으로 요약.
 
 ---
 [AI 뉴스]
@@ -82,18 +159,22 @@ ${JSON.stringify(news, null, 2)}
 
 [GitHub 프로젝트]
 ${JSON.stringify(github, null, 2)}
+${youtubeSection}
 ---
 
 다음 섹션 구조를 정확히 따르세요:
 
-## 오늘의 AI 뉴스
-각 항목: ### 제목 (한국어 번역), 2-3문장 한국어 요약, > 📎 원문: [제목](URL)
+## 오늘의 AI 개발 뉴스
+각 항목: ### 제목 (한국어), 개발자 관점 2-3문장 한국어 요약 (API 변경, 새 기능, 비용 영향 등 언급), > 📎 원문: [제목](URL)
 
 ## GitHub 하이라이트
-각 항목: ### [레포명](URL), ⭐숫자 | 언어, 2문장 한국어 설명, **주목 이유**: 1문장
+각 항목: ### [레포명](URL), ⭐숫자 | 언어, 어떤 개발에 쓰는지 2문장, **써야 하는 이유**: 1문장
 
-## 오늘의 트렌드 요약
-오늘 AI 생태계의 전반적 흐름을 3-4줄로 요약.
+${youtube.length > 0 ? `## 이번 주 추천 영상
+각 항목: ### [영상제목](URL), 📺 채널명 | 조회수 N만회 | 날짜, 영상 내용 1-2문장 한국어 요약
+
+` : ''}## 오늘의 트렌드 요약
+풀스택 개발자 입장에서 오늘 AI 생태계의 핵심 흐름을 3-4줄로 요약.
 
 규칙: 모든 텍스트는 한국어, 기술 용어·고유명사·URL은 영어 유지.`;
 
@@ -117,12 +198,12 @@ ${JSON.stringify(github, null, 2)}
 function writePost(dateStr, body) {
   const lower = body.toLowerCase();
   const candidates = ['llm', 'openai', 'anthropic', 'google', 'claude', 'gpt', 'gemini',
-                      'opensource', 'transformer', 'rag', 'agent'];
+                      'opensource', 'transformer', 'rag', 'agent', 'api', 'sdk'];
   const tags = candidates.filter(t => lower.includes(t));
 
   const frontMatter = [
     '---',
-    `title: "[AI 데일리] ${dateStr} — 오늘의 AI 뉴스 & GitHub 하이라이트"`,
+    `title: "[AI 데일리] ${dateStr} — 풀스택 개발자를 위한 AI 뉴스"`,
     `date: ${dateStr} 08:00:00 +0900`,
     `categories: [AI 데일리]`,
     `tags: [${tags.join(', ')}]`,
@@ -168,17 +249,18 @@ async function main() {
   console.log(`수집 범위: ${startTime.toISOString()} ~ ${now.toISOString()}`);
   if (DRY_RUN) console.log('[dry-run 모드: git push 생략]');
 
-  const [news, github] = await Promise.all([
+  const [news, github, youtube] = await Promise.all([
     fetchHackerNews(startTs).catch(e => { console.error('[HN 오류]', e.message); return []; }),
     fetchGitHub(startTime).catch(e => { console.error('[GitHub 오류]', e.message); return []; }),
+    fetchYouTube(startTime).catch(e => { console.error('[YouTube 오류]', e.message); return []; }),
   ]);
 
-  console.log(`수집: HN=${news.length}, GitHub=${github.length}`);
+  console.log(`수집: HN=${news.length}, GitHub=${github.length}, YouTube=${youtube.length}`);
   if (news.length + github.length < 3) {
     throw new Error('데이터 부족 (3개 미만). 종료.');
   }
 
-  const body     = summarize(news, github, dateStr);
+  const body     = summarize(news, github, youtube, dateStr);
   const filename = writePost(dateStr, body);
 
   if (!DRY_RUN) {
