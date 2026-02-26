@@ -24,15 +24,6 @@ async function fetchJSON(url) {
   return res.json();
 }
 
-async function fetchText(url) {
-  const res = await fetch(url, {
-    headers: { 'User-Agent': 'AI-Daily-Digest/1.0' },
-    signal: AbortSignal.timeout(15000)
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
-  return res.text();
-}
-
 // ─── Data Sources ─────────────────────────────────────────────────────────────
 
 // Hacker News: AI/LLM 관련 뉴스
@@ -77,26 +68,8 @@ async function fetchGitHub(since) {
   }));
 }
 
-// arXiv: cs.AI + cs.LG 최신 논문
-async function fetchArxiv() {
-  const xml = await fetchText('http://export.arxiv.org/rss/cs.AI+cs.LG');
-  const items = [];
-  const re = /<item>([\s\S]*?)<\/item>/g;
-  let m;
-  while ((m = re.exec(xml)) !== null && items.length < 8) {
-    const block = m[1];
-    const title = (block.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '')
-      .replace(/<[^>]+>/g, '').trim();
-    const link  = (block.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').trim();
-    const desc  = (block.match(/<description>([\s\S]*?)<\/description>/)?.[1] || '')
-      .replace(/<[^>]+>/g, '').trim().slice(0, 350);
-    if (title && link) items.push({ type: 'paper', title, url: link, description: desc, source: 'arXiv' });
-  }
-  return items;
-}
-
 // ─── Claude 요약 ──────────────────────────────────────────────────────────────
-function summarize(news, github, papers, dateStr) {
+function summarize(news, github, dateStr) {
   const prompt = `당신은 AI 데일리 블로그 작성자입니다.
 도구를 절대 사용하지 마세요. 마크다운 텍스트만 직접 출력하세요.
 
@@ -109,9 +82,6 @@ ${JSON.stringify(news, null, 2)}
 
 [GitHub 프로젝트]
 ${JSON.stringify(github, null, 2)}
-
-[arXiv 논문]
-${JSON.stringify(papers, null, 2)}
 ---
 
 다음 섹션 구조를 정확히 따르세요:
@@ -121,9 +91,6 @@ ${JSON.stringify(papers, null, 2)}
 
 ## GitHub 하이라이트
 각 항목: ### [레포명](URL), ⭐숫자 | 언어, 2문장 한국어 설명, **주목 이유**: 1문장
-
-## 주목할 논문
-각 항목: ### 제목 (한국어), 2문장 한국어 요약, 📄 [arXiv](URL)
 
 ## 오늘의 트렌드 요약
 오늘 AI 생태계의 전반적 흐름을 3-4줄로 요약.
@@ -148,10 +115,9 @@ ${JSON.stringify(papers, null, 2)}
 
 // ─── 포스트 저장 ──────────────────────────────────────────────────────────────
 function writePost(dateStr, body) {
-  // 본문에서 자동 태그 추출
   const lower = body.toLowerCase();
   const candidates = ['llm', 'openai', 'anthropic', 'google', 'claude', 'gpt', 'gemini',
-                      'opensource', 'arxiv', 'transformer', 'rag', 'agent'];
+                      'opensource', 'transformer', 'rag', 'agent'];
   const tags = candidates.filter(t => lower.includes(t));
 
   const frontMatter = [
@@ -194,26 +160,25 @@ function gitPush(filename, dateStr) {
 async function main() {
   const now       = new Date();
   const kstNow    = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const dateStr   = kstNow.toISOString().slice(0, 10);          // YYYY-MM-DD (KST)
-  const startTime = new Date(now.getTime() - 25 * 60 * 60 * 1000); // 25h ago (buffer)
+  const dateStr   = kstNow.toISOString().slice(0, 10);
+  const startTime = new Date(now.getTime() - 25 * 60 * 60 * 1000);
   const startTs   = Math.floor(startTime.getTime() / 1000);
 
   console.log(`\n=== AI 데일리 생성: ${dateStr} ===`);
   console.log(`수집 범위: ${startTime.toISOString()} ~ ${now.toISOString()}`);
   if (DRY_RUN) console.log('[dry-run 모드: git push 생략]');
 
-  const [news, github, papers] = await Promise.all([
+  const [news, github] = await Promise.all([
     fetchHackerNews(startTs).catch(e => { console.error('[HN 오류]', e.message); return []; }),
     fetchGitHub(startTime).catch(e => { console.error('[GitHub 오류]', e.message); return []; }),
-    fetchArxiv().catch(e => { console.error('[arXiv 오류]', e.message); return []; }),
   ]);
 
-  console.log(`수집: HN=${news.length}, GitHub=${github.length}, arXiv=${papers.length}`);
-  if (news.length + github.length + papers.length < 5) {
-    throw new Error('데이터 부족 (5개 미만). 종료.');
+  console.log(`수집: HN=${news.length}, GitHub=${github.length}`);
+  if (news.length + github.length < 3) {
+    throw new Error('데이터 부족 (3개 미만). 종료.');
   }
 
-  const body     = summarize(news, github, papers, dateStr);
+  const body     = summarize(news, github, dateStr);
   const filename = writePost(dateStr, body);
 
   if (!DRY_RUN) {
