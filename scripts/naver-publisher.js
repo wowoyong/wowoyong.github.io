@@ -18,6 +18,7 @@ if (fs.existsSync(configPath)) {
 }
 
 const USER_DATA_DIR = path.join(__dirname, '..', '.playwright-naver');
+const NAVER_COOKIES = path.join(__dirname, 'naver-cookies.json');
 const NAVER_ID = process.env.NAVER_ID || '';
 const NAVER_PW = process.env.NAVER_PW || '';
 const NAVER_BLOG_ID = process.env.NAVER_BLOG_ID || '';
@@ -25,6 +26,23 @@ const NAVER_CATEGORY = process.env.NAVER_CATEGORY || '';
 
 const LOGIN_URL = 'https://nid.naver.com/nidlogin.login?mode=form';
 const WRITE_URL = (blogId) => `https://blog.naver.com/${blogId}/postwrite`;
+
+// ─── 쿠키 저장/복원 헬퍼 ─────────────────────────────────────────────────────
+async function loadCookies(context) {
+  if (fs.existsSync(NAVER_COOKIES)) {
+    try {
+      const cookies = JSON.parse(fs.readFileSync(NAVER_COOKIES, 'utf8'));
+      await context.addCookies(cookies);
+      return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+async function saveCookies(context) {
+  const cookies = await context.cookies();
+  fs.writeFileSync(NAVER_COOKIES, JSON.stringify(cookies, null, 2));
+}
 
 // ─── 마크다운 → HTML 변환 ────────────────────────────────────────────────────
 function markdownToHtml(md) {
@@ -52,6 +70,8 @@ async function naverLogin() {
     permissions: ['clipboard-read', 'clipboard-write'],
   });
 
+  await loadCookies(context);
+
   // 로그인 상태 확인
   const page = await context.newPage();
   console.log('[Naver] 로그인 상태 확인...');
@@ -64,6 +84,7 @@ async function naverLogin() {
   const url = page.url();
   if (!url.includes('nidlogin') && !url.includes('login')) {
     console.log('[Naver] 세션 유지 중 (persistent context)');
+    await saveCookies(context);
     await page.close();
     return context;
   }
@@ -96,6 +117,7 @@ async function naverLogin() {
   } catch (_) {}
 
   console.log('[Naver] 로그인 성공');
+  await saveCookies(context);
   await page.close();
   return context;
 }

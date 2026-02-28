@@ -18,12 +18,30 @@ if (fs.existsSync(configPath)) {
 }
 
 const USER_DATA_DIR = path.join(__dirname, '..', '.playwright-tistory');
+const TISTORY_COOKIES = path.join(__dirname, 'tistory-cookies.json');
 const KAKAO_EMAIL = process.env.KAKAO_EMAIL || '';
 const KAKAO_PW = process.env.KAKAO_PW || '';
 const TISTORY_BLOG = process.env.TISTORY_BLOG || '';
 const TISTORY_CATEGORY = process.env.TISTORY_CATEGORY || '';
 
 const WRITE_URL = (blog) => `https://${blog}.tistory.com/manage/newpost`;
+
+// ─── 쿠키 저장/복원 헬퍼 ─────────────────────────────────────────────────────
+async function loadCookies(context) {
+  if (fs.existsSync(TISTORY_COOKIES)) {
+    try {
+      const cookies = JSON.parse(fs.readFileSync(TISTORY_COOKIES, 'utf8'));
+      await context.addCookies(cookies);
+      return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+async function saveCookies(context) {
+  const cookies = await context.cookies();
+  fs.writeFileSync(TISTORY_COOKIES, JSON.stringify(cookies, null, 2));
+}
 
 // ─── Persistent Context 로그인 ───────────────────────────────────────────────
 async function tistoryLogin() {
@@ -36,6 +54,8 @@ async function tistoryLogin() {
     args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
   });
 
+  await loadCookies(context);
+
   // 로그인 상태 확인
   const page = await context.newPage();
   console.log('[Tistory] 로그인 상태 확인...');
@@ -47,6 +67,7 @@ async function tistoryLogin() {
 
   if (page.url().includes('/manage/newpost')) {
     console.log('[Tistory] 세션 유지 중 (persistent context)');
+    await saveCookies(context);
     await page.close();
     return context;
   }
@@ -94,6 +115,7 @@ async function tistoryLogin() {
   }
 
   console.log('[Tistory] 로그인 성공');
+  await saveCookies(context);
   await page.close();
   return context;
 }
