@@ -266,6 +266,26 @@ async function main() {
   if (!DRY_RUN) {
     gitPush(filename, dateStr);
     console.log(`\n✓ 완료: https://wowoyong.github.io/posts/${dateStr}-ai-daily/`);
+
+    // 네이버 블로그 발행 (실패해도 GitHub Pages 발행에 영향 없음)
+    try {
+      const { publishToNaverBlog } = require('./naver-publisher');
+      const naverTitle = `[AI 데일리] ${dateStr} — 풀스택 개발자를 위한 AI 뉴스`;
+      await publishToNaverBlog(naverTitle, body);
+      console.log('[Naver] 블로그 발행 완료');
+    } catch (e) {
+      console.error('[Naver] 발행 실패 (GitHub Pages는 정상):', e.message);
+    }
+
+    // 티스토리 블로그 발행 (실패해도 GitHub Pages 발행에 영향 없음)
+    try {
+      const { publishToTistory } = require('./tistory-publisher');
+      const tistoryTitle = `[AI 데일리] ${dateStr} — 풀스택 개발자를 위한 AI 뉴스`;
+      await publishToTistory(tistoryTitle, body);
+      console.log('[Tistory] 블로그 발행 완료');
+    } catch (e) {
+      console.error('[Tistory] 발행 실패 (GitHub Pages는 정상):', e.message);
+    }
   } else {
     console.log(`\n[dry-run] 파일 생성됨: _posts/${filename} (push 생략)`);
   }
