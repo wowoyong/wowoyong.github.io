@@ -189,32 +189,56 @@ async function publishToTistory(title, markdownBody) {
     await page.keyboard.insertText(title);
     await page.waitForTimeout(500);
 
-    // 본문 입력 (TinyMCE iframe)
+    // 본문 입력 (TinyMCE iframe — HTML로 직접 삽입)
     console.log('[Tistory] 본문 입력...');
     const iframe = await page.$('iframe#editor-tistory_ifr');
     if (iframe) {
       const frame = await iframe.contentFrame();
       if (frame) {
-        const body = await frame.$('body');
-        if (body) {
-          await body.click();
-          await page.waitForTimeout(300);
-          // 마크다운을 평문으로 변환
-          const plainBody = markdownBody
-            .replace(/^#{1,3}\s+/gm, '')
-            .replace(/\*\*(.+?)\*\*/g, '$1')
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
-            .replace(/`([^`]+)`/g, '$1')
-            .replace(/^>\s?/gm, '')
-            .replace(/^-\s+/gm, '• ');
-          await page.keyboard.insertText(plainBody);
-          console.log('[Tistory] 본문 입력 완료');
-        }
+        // 마크다운 → HTML 변환
+        let htmlBody = markdownBody;
+        // --- 수평선
+        htmlBody = htmlBody.replace(/^---$/gm, '<hr>');
+        // ### 소제목
+        htmlBody = htmlBody.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+        // ## 제목
+        htmlBody = htmlBody.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+        // **볼드**
+        htmlBody = htmlBody.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // [텍스트](URL) → 클릭 가능한 링크
+        htmlBody = htmlBody.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        // `인라인 코드`
+        htmlBody = htmlBody.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // > 인용문
+        htmlBody = htmlBody.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+        // 리스트 항목 (- 로 시작)
+        htmlBody = htmlBody.replace(/^- (.+)$/gm, '<li>$1</li>');
+        // 연속된 <li> → <ul>로 감싸기
+        htmlBody = htmlBody.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
+        // 빈 줄 → <br>
+        htmlBody = htmlBody.replace(/\n\n/g, '<br><br>');
+        htmlBody = htmlBody.replace(/\n/g, '<br>');
+        // 연속 <br> 정리
+        htmlBody = htmlBody.replace(/(<br>){3,}/g, '<br><br>');
+
+        // TinyMCE API로 HTML 삽입 (내부 상태에 반영되어야 저장됨)
+        await page.evaluate((html) => {
+          if (window.tinymce && tinymce.activeEditor) {
+            tinymce.activeEditor.setContent(html);
+          }
+        }, htmlBody);
+        console.log('[Tistory] 본문 HTML 입력 완료');
       }
     } else {
       console.warn('[Tistory] TinyMCE iframe을 찾지 못함');
     }
     await page.waitForTimeout(1000);
+
+    // TinyMCE 내용을 form에 동기화
+    await page.evaluate(() => {
+      if (window.tinymce) tinymce.triggerSave();
+    });
+    await page.waitForTimeout(500);
 
     // 완료 버튼 클릭 → 발행 설정 패널 열기
     console.log('[Tistory] 발행 설정 패널 열기...');

@@ -32,3 +32,4 @@ scripts/.prompt-tmp.txt
 scripts/config.env
 scripts/naver-auth.json
 scripts/tistory-auth.json
+.playwright-data/

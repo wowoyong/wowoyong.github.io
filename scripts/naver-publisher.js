@@ -77,7 +77,10 @@ async function naverLogin() {
   if (fs.existsSync(AUTH_FILE)) {
     console.log('[Naver] 저장된 세션 복원 시도...');
     try {
-      context = await browser.newContext({ storageState: AUTH_FILE });
+      context = await browser.newContext({
+        storageState: AUTH_FILE,
+        permissions: ['clipboard-read', 'clipboard-write'],
+      });
       const page = await context.newPage();
       await page.goto('https://blog.naver.com/MyBlog.naver', {
         waitUntil: 'domcontentloaded',
@@ -104,6 +107,7 @@ async function naverLogin() {
   console.log('[Naver] 로그인 진행...');
   context = await browser.newContext({
     userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    permissions: ['clipboard-read', 'clipboard-write'],
   });
 
   const page = await context.newPage();
@@ -193,13 +197,19 @@ async function publishToNaverBlog(title, markdownBody) {
     await page.keyboard.insertText(title);
     await page.waitForTimeout(500);
 
-    // 본문 입력 (keyboard.insertText — SmartEditor ONE 호환)
+    // 본문 입력 (SmartEditor ONE의 본문은 iframe 내부이므로 클립보드 붙여넣기 사용)
     console.log('[Naver] 본문 입력...');
-    const bodySelector = '.se-component.se-text .se-text-paragraph';
-    await page.waitForSelector(bodySelector, { timeout: 15000 });
-    await page.click(bodySelector);
+    const bodySelector = '.se-component.se-text:not(.se-documentTitle) .se-text-paragraph';
+    try {
+      await page.waitForSelector(bodySelector, { timeout: 5000 });
+      await page.click(bodySelector);
+    } catch (_) {
+      const contentArea = await page.$('.se-content, .se-components-container');
+      if (contentArea) await contentArea.click();
+    }
     await page.waitForTimeout(500);
-    // 마크다운을 평문으로 변환 (마크다운 기호 제거, 구조는 유지)
+
+    // 마크다운을 평문으로 변환
     const plainBody = markdownBody
       .replace(/^#{1,3}\s+/gm, '')           // 헤딩 기호 제거
       .replace(/\*\*(.+?)\*\*/g, '$1')       // 볼드 기호 제거
@@ -207,8 +217,17 @@ async function publishToNaverBlog(title, markdownBody) {
       .replace(/`([^`]+)`/g, '$1')           // 인라인 코드 기호 제거
       .replace(/^>\s?/gm, '')                // 인용문 기호 제거
       .replace(/^-\s+/gm, '• ');             // 리스트 → 불릿
-    await page.keyboard.insertText(plainBody);
-    await page.waitForTimeout(1000);
+
+    // 클립보드에 텍스트 복사 → Cmd+V 붙여넣기
+    await page.evaluate(async (text) => {
+      await navigator.clipboard.writeText(text);
+    }, plainBody);
+    await page.waitForTimeout(300);
+    await page.keyboard.down('Meta');
+    await page.keyboard.press('v');
+    await page.keyboard.up('Meta');
+    await page.waitForTimeout(3000);
+    console.log('[Naver] 본문 입력 완료');
 
     // 발행 버튼 클릭 (발행 설정 패널 열기)
     console.log('[Naver] 발행 설정 패널 열기...');
