@@ -17,7 +17,7 @@ if (fs.existsSync(configPath)) {
   });
 }
 
-const AUTH_FILE = path.join(__dirname, 'tistory-auth.json');
+const USER_DATA_DIR = path.join(__dirname, '..', '.playwright-tistory');
 const KAKAO_EMAIL = process.env.KAKAO_EMAIL || '';
 const KAKAO_PW = process.env.KAKAO_PW || '';
 const TISTORY_BLOG = process.env.TISTORY_BLOG || '';
@@ -25,53 +25,34 @@ const TISTORY_CATEGORY = process.env.TISTORY_CATEGORY || '';
 
 const WRITE_URL = (blog) => `https://${blog}.tistory.com/manage/newpost`;
 
-// ─── 카카오 로그인 ────────────────────────────────────────────────────────────
+// ─── Persistent Context 로그인 ───────────────────────────────────────────────
 async function tistoryLogin() {
   if (!KAKAO_EMAIL || !KAKAO_PW) {
     throw new Error('[Tistory] KAKAO_EMAIL, KAKAO_PW 환경변수가 설정되지 않았습니다.');
   }
 
-  const browser = await chromium.launch({
+  const context = await chromium.launchPersistentContext(USER_DATA_DIR, {
     headless: false,
     args: ['--disable-blink-features=AutomationControlled', '--no-sandbox'],
   });
 
-  // 저장된 세션 재사용 시도
-  let context;
-  if (fs.existsSync(AUTH_FILE)) {
-    console.log('[Tistory] 저장된 세션 복원 시도...');
-    try {
-      context = await browser.newContext({ storageState: AUTH_FILE });
-      const page = await context.newPage();
-      await page.goto(WRITE_URL(TISTORY_BLOG), {
-        waitUntil: 'domcontentloaded',
-        timeout: 15000,
-      });
-      await page.waitForTimeout(3000);
-      const url = page.url();
-      if (url.includes('/manage/newpost')) {
-        console.log('[Tistory] 세션 복원 성공');
-        await page.close();
-        return { browser, context };
-      }
-      console.log('[Tistory] 세션 만료, 재로그인 필요');
-      await page.close();
-      await context.close();
-    } catch (e) {
-      console.log('[Tistory] 세션 복원 실패:', e.message);
-      if (context) await context.close();
-    }
+  // 로그인 상태 확인
+  const page = await context.newPage();
+  console.log('[Tistory] 로그인 상태 확인...');
+  await page.goto(WRITE_URL(TISTORY_BLOG), {
+    waitUntil: 'domcontentloaded',
+    timeout: 15000,
+  });
+  await page.waitForTimeout(3000);
+
+  if (page.url().includes('/manage/newpost')) {
+    console.log('[Tistory] 세션 유지 중 (persistent context)');
+    await page.close();
+    return context;
   }
 
-  // 새 로그인: 에디터 페이지 → 카카오 로그인 리다이렉트
+  // 세션 없음 → 카카오 로그인 진행
   console.log('[Tistory] 카카오 계정 로그인 진행...');
-  context = await browser.newContext({
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  });
-
-  const page = await context.newPage();
-  await page.goto(WRITE_URL(TISTORY_BLOG), { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await page.waitForTimeout(3000);
 
   // 티스토리 로그인 페이지 → 카카오 버튼 클릭
   if (page.url().includes('tistory.com/auth/login')) {
@@ -90,14 +71,8 @@ async function tistoryLogin() {
   }
 
   // 2단계 인증 대기 (카카오톡 승인 필요)
-  const isTistoryManage = (u) => {
-    try { return new URL(u).hostname.includes('tistory.com') && u.includes('/manage'); }
-    catch (_) { return false; }
-  };
-
-  if (!isTistoryManage(page.url())) {
-    console.log('[Tistory] 카카오톡 2단계 인증 대기 (60초)...');
-    // "이 브라우저에서 2단계 인증 사용 안 함" 체크 시도
+  if (!page.url().includes('/manage')) {
+    console.log('[Tistory] 카카오톡 2단계 인증 대기 (3분)...');
     try {
       const checkbox = await page.$('input[type="checkbox"]');
       if (checkbox) await checkbox.click();
@@ -107,12 +82,11 @@ async function tistoryLogin() {
       await page.waitForURL(url => {
         try { return new URL(url).hostname.includes('tistory.com') && !url.href.includes('/auth/login'); }
         catch (_) { return false; }
-      }, { timeout: 60000 });
+      }, { timeout: 180000 });
     } catch (_) {
       throw new Error('[Tistory] 카카오 로그인 시간 초과');
     }
 
-    // 에디터 페이지로 이동
     if (!page.url().includes('/manage/newpost')) {
       await page.goto(WRITE_URL(TISTORY_BLOG), { waitUntil: 'domcontentloaded', timeout: 15000 });
       await page.waitForTimeout(3000);
@@ -120,11 +94,8 @@ async function tistoryLogin() {
   }
 
   console.log('[Tistory] 로그인 성공');
-  await context.storageState({ path: AUTH_FILE });
-  console.log('[Tistory] 세션 저장 완료:', AUTH_FILE);
-
   await page.close();
-  return { browser, context };
+  return context;
 }
 
 // ─── 블로그 발행 ──────────────────────────────────────────────────────────────
@@ -133,7 +104,7 @@ async function publishToTistory(title, markdownBody) {
     throw new Error('[Tistory] TISTORY_BLOG 환경변수가 설정되지 않았습니다.');
   }
 
-  const { browser, context } = await tistoryLogin();
+  const context = await tistoryLogin();
 
   try {
     const page = await context.newPage();
@@ -152,16 +123,10 @@ async function publishToTistory(title, markdownBody) {
       try {
         await page.click('#category-btn', { timeout: 5000 });
         await page.waitForTimeout(1000);
-
-        // 카테고리 목록에서 텍스트 매칭 (스크린샷에서 확인: "- AI" 형태)
-        const catItem = page.locator(`#category-btn + *, [class*="category"]`).locator(`text="${subCategory}"`).first();
-        // 대안: 페이지 전체에서 정확히 "AI" 텍스트가 있는 요소 클릭
         const clicked = await page.evaluate((cat) => {
-          // 카테고리 드롭다운의 모든 항목을 순회
           const items = document.querySelectorAll('span, a, li, div, p');
           for (const item of items) {
             const text = item.textContent.trim();
-            // "- AI" 또는 "AI" 정확 매칭
             if (text === cat || text === `- ${cat}`) {
               item.click();
               return true;
@@ -189,39 +154,26 @@ async function publishToTistory(title, markdownBody) {
     await page.keyboard.insertText(title);
     await page.waitForTimeout(500);
 
-    // 본문 입력 (TinyMCE iframe — HTML로 직접 삽입)
+    // 본문 입력 (TinyMCE — HTML)
     console.log('[Tistory] 본문 입력...');
     const iframe = await page.$('iframe#editor-tistory_ifr');
     if (iframe) {
       const frame = await iframe.contentFrame();
       if (frame) {
-        // 마크다운 → HTML 변환
         let htmlBody = markdownBody;
-        // --- 수평선
         htmlBody = htmlBody.replace(/^---$/gm, '<hr>');
-        // ### 소제목
         htmlBody = htmlBody.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-        // ## 제목
         htmlBody = htmlBody.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-        // **볼드**
         htmlBody = htmlBody.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        // [텍스트](URL) → 클릭 가능한 링크
         htmlBody = htmlBody.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-        // `인라인 코드`
         htmlBody = htmlBody.replace(/`([^`]+)`/g, '<code>$1</code>');
-        // > 인용문
         htmlBody = htmlBody.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-        // 리스트 항목 (- 로 시작)
         htmlBody = htmlBody.replace(/^- (.+)$/gm, '<li>$1</li>');
-        // 연속된 <li> → <ul>로 감싸기
         htmlBody = htmlBody.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
-        // 빈 줄 → <br>
         htmlBody = htmlBody.replace(/\n\n/g, '<br><br>');
         htmlBody = htmlBody.replace(/\n/g, '<br>');
-        // 연속 <br> 정리
         htmlBody = htmlBody.replace(/(<br>){3,}/g, '<br><br>');
 
-        // TinyMCE API로 HTML 삽입 (내부 상태에 반영되어야 저장됨)
         await page.evaluate((html) => {
           if (window.tinymce && tinymce.activeEditor) {
             tinymce.activeEditor.setContent(html);
@@ -234,27 +186,26 @@ async function publishToTistory(title, markdownBody) {
     }
     await page.waitForTimeout(1000);
 
-    // TinyMCE 내용을 form에 동기화
+    // TinyMCE → form 동기화
     await page.evaluate(() => {
       if (window.tinymce) tinymce.triggerSave();
     });
     await page.waitForTimeout(500);
 
-    // 완료 버튼 클릭 → 발행 설정 패널 열기
+    // 발행 설정 패널 열기
     console.log('[Tistory] 발행 설정 패널 열기...');
     await page.click('#publish-layer-btn', { timeout: 5000 });
     await page.waitForTimeout(2000);
 
-    // "공개" 라디오 버튼 선택 (기본값이 비공개)
+    // 공개 설정
     console.log('[Tistory] 공개 설정...');
     await page.click('#open20', { timeout: 5000 });
     await page.waitForTimeout(500);
 
-    // 공개 발행 버튼 클릭
+    // 공개 발행
     console.log('[Tistory] 공개 발행...');
     await page.click('#publish-btn', { timeout: 5000 });
 
-    // 발행 완료 대기
     try {
       await page.waitForURL(url => !url.href.includes('/manage/newpost'), { timeout: 15000 });
       console.log(`[Tistory] 발행 완료: ${page.url()}`);
@@ -264,7 +215,7 @@ async function publishToTistory(title, markdownBody) {
 
     await page.close();
   } finally {
-    await browser.close();
+    await context.close();
   }
 }
 
