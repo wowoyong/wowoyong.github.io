@@ -27,6 +27,14 @@ const NAVER_CATEGORY = process.env.NAVER_CATEGORY || '';
 const LOGIN_URL = 'https://nid.naver.com/nidlogin.login?mode=form';
 const WRITE_URL = (blogId) => `https://blog.naver.com/${blogId}/postwrite`;
 
+function extractLeafCategory(category) {
+  return category
+    .split(/[/>]/)
+    .map(part => part.trim())
+    .filter(Boolean)
+    .pop() || '';
+}
+
 // ─── 쿠키 저장/복원 헬퍼 ─────────────────────────────────────────────────────
 async function loadCookies(context) {
   if (fs.existsSync(NAVER_COOKIES)) {
@@ -44,18 +52,71 @@ async function saveCookies(context) {
   fs.writeFileSync(NAVER_COOKIES, JSON.stringify(cookies, null, 2));
 }
 
-// ─── 마크다운 → HTML 변환 ────────────────────────────────────────────────────
-function markdownToHtml(md) {
-  let html = md;
-  html = html.replace(/^### (.+)$/gm, '<br><b>$1</b><br>');
-  html = html.replace(/^## (.+)$/gm, '<br><br><b style="font-size:18px">$1</b><br>');
-  html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+// ─── 마크다운 → 네이버용 변환 ────────────────────────────────────────────────
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function convertMarkdownForNaver(md) {
+  const codeBlocks = [];
+  let source = md.replace(/```([\w-]+)?\n([\s\S]*?)```/g, (_, lang = '', code = '') => {
+    const token = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push({
+      lang: lang.trim(),
+      code: code.replace(/\n$/, ''),
+    });
+    return token;
+  });
+
+  let text = source;
+  let html = source;
+
+  text = text.replace(/^## (.+)$/gm, '$1');
+  text = text.replace(/^### (.+)$/gm, '$1');
+  text = text.replace(/\*\*(.+?)\*\*/g, '$1');
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)');
+  text = text.replace(/`([^`]+)`/g, '[$1]');
+  text = text.replace(/^> (.+)$/gm, '[highlight] $1');
+  text = text.replace(/^- (.+)$/gm, '• $1');
+
+  html = escapeHtml(html);
+  html = html.replace(/^## (.+)$/gm, '<div style="margin:18px 0 8px;font-size:20px;font-weight:700;">$1</div>');
+  html = html.replace(/^### (.+)$/gm, '<div style="margin:14px 0 6px;font-size:17px;font-weight:700;">$1</div>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" target="_blank" style="color:#2f6fed;text-decoration:underline;">$1</a>'
+  );
+  html = html.replace(
+    /`([^`]+)`/g,
+    '<span style="background:#f3f5f7;border:1px solid #d8dee4;border-radius:4px;padding:1px 6px;font-family:monospace;">$1</span>'
+  );
+  html = html.replace(
+    /^> (.+)$/gm,
+    '<div style="margin:10px 0;padding:10px 12px;border-left:4px solid #03c75a;background:#f6fbf8;"><strong>Highlight.</strong> $1</div>'
+  );
+  html = html.replace(/^- (.+)$/gm, '<div style="margin:2px 0 2px 12px;">• $1</div>');
+
+  for (let i = 0; i < codeBlocks.length; i += 1) {
+    const token = `__CODE_BLOCK_${i}__`;
+    const { lang, code } = codeBlocks[i];
+    const label = lang ? `[${lang}]` : '[code]';
+    const escapedCode = escapeHtml(code);
+    text = text.replace(token, `${label}\n${code}\n[/code]`);
+    html = html.replace(
+      token,
+      `<div style="margin:12px 0;padding:12px 14px;border:1px solid #d8dee4;border-radius:8px;background:#f6f8fa;font-family:monospace;white-space:pre-wrap;"><strong style="display:block;margin-bottom:8px;font-family:sans-serif;">${label}</strong>${escapedCode}</div>`
+    );
+  }
+
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/(<br>){3,}/g, '<br><br>');
-  return html;
+
+  return { text, html };
 }
 
 // ─── Persistent Context 로그인 ───────────────────────────────────────────────
@@ -178,17 +239,20 @@ async function publishToNaverBlog(title, markdownBody) {
     }
     await page.waitForTimeout(500);
 
-    const plainBody = markdownBody
-      .replace(/^#{1,3}\s+/gm, '')
-      .replace(/\*\*(.+?)\*\*/g, '$1')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/^>\s?/gm, '')
-      .replace(/^-\s+/gm, '• ');
+    const { text: plainBody, html: htmlBody } = convertMarkdownForNaver(markdownBody);
 
-    await page.evaluate(async (text) => {
+    await page.evaluate(async ({ text, html }) => {
+      if (window.ClipboardItem && navigator.clipboard.write) {
+        const item = new ClipboardItem({
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+          'text/html': new Blob([html], { type: 'text/html' }),
+        });
+        await navigator.clipboard.write([item]);
+        return;
+      }
+
       await navigator.clipboard.writeText(text);
-    }, plainBody);
+    }, { text: plainBody, html: htmlBody });
     await page.waitForTimeout(300);
     await page.keyboard.down('Meta');
     await page.keyboard.press('v');
@@ -203,9 +267,7 @@ async function publishToNaverBlog(title, markdownBody) {
 
     // 카테고리 선택
     if (NAVER_CATEGORY) {
-      const subCategory = NAVER_CATEGORY.includes('/')
-        ? NAVER_CATEGORY.split('/').pop()
-        : NAVER_CATEGORY;
+      const subCategory = extractLeafCategory(NAVER_CATEGORY);
 
       console.log(`[Naver] 카테고리 선택: ${subCategory}`);
       try {
@@ -277,4 +339,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { publishToNaverBlog, markdownToHtml };
+module.exports = { publishToNaverBlog, convertMarkdownForNaver };

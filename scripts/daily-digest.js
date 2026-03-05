@@ -12,6 +12,8 @@ const BLOG_DIR  = '/Users/jojaeyong/WebstormProjects/wowoyong.github.io';
 const SSH_KEY   = '/Users/jojaeyong/.ssh/id_ed25519_wowoyong_new';
 const NODE      = path.join(NODE_BIN, 'node');
 const DRY_RUN   = process.argv.includes('--dry-run');
+const PUBLISH_RETRY_COUNT = parseInt(process.env.PUBLISH_RETRY_COUNT || '2', 10);
+const PUBLISH_RETRY_DELAY_MS = parseInt(process.env.PUBLISH_RETRY_DELAY_MS || '20000', 10);
 
 // config.env 로드 (API 키 등 로컬 설정)
 const configPath = path.join(__dirname, 'config.env');
@@ -237,6 +239,30 @@ function gitPush(filename, dateStr) {
   console.log('[Git] 배포 완료');
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function publishWithRetry(name, publisher, maxAttempts, retryDelayMs) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      if (attempt > 1) console.log(`[${name}] 재시도 ${attempt}/${maxAttempts}...`);
+      await publisher();
+      console.log(`[${name}] 블로그 발행 완료`);
+      return;
+    } catch (e) {
+      lastError = e;
+      const isLast = attempt === maxAttempts;
+      if (isLast) break;
+      console.error(`[${name}] 발행 실패 (시도 ${attempt}/${maxAttempts}): ${e.message}`);
+      console.log(`[${name}] ${Math.floor(retryDelayMs / 1000)}초 후 재시도`);
+      await sleep(retryDelayMs);
+    }
+  }
+  console.error(`[${name}] 발행 최종 실패 (GitHub Pages는 정상): ${lastError ? lastError.message : 'unknown error'}`);
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
   const now       = new Date();
@@ -267,25 +293,17 @@ async function main() {
     gitPush(filename, dateStr);
     console.log(`\n✓ 완료: https://wowoyong.github.io/posts/${dateStr}-ai-daily/`);
 
-    // 네이버 블로그 발행 (실패해도 GitHub Pages 발행에 영향 없음)
-    try {
-      const { publishToNaverBlog } = require('./naver-publisher');
-      const naverTitle = `[AI 데일리] ${dateStr} — 풀스택 개발자를 위한 AI 뉴스`;
-      await publishToNaverBlog(naverTitle, body);
-      console.log('[Naver] 블로그 발행 완료');
-    } catch (e) {
-      console.error('[Naver] 발행 실패 (GitHub Pages는 정상):', e.message);
-    }
+    const maxAttempts = Number.isFinite(PUBLISH_RETRY_COUNT) && PUBLISH_RETRY_COUNT > 0 ? PUBLISH_RETRY_COUNT : 2;
+    const retryDelayMs = Number.isFinite(PUBLISH_RETRY_DELAY_MS) && PUBLISH_RETRY_DELAY_MS >= 0
+      ? PUBLISH_RETRY_DELAY_MS
+      : 20000;
 
-    // 티스토리 블로그 발행 (실패해도 GitHub Pages 발행에 영향 없음)
-    try {
-      const { publishToTistory } = require('./tistory-publisher');
-      const tistoryTitle = `[AI 데일리] ${dateStr} — 풀스택 개발자를 위한 AI 뉴스`;
-      await publishToTistory(tistoryTitle, body);
-      console.log('[Tistory] 블로그 발행 완료');
-    } catch (e) {
-      console.error('[Tistory] 발행 실패 (GitHub Pages는 정상):', e.message);
-    }
+    const { publishToNaverBlog } = require('./naver-publisher');
+    const { publishToTistory } = require('./tistory-publisher');
+    const title = `[AI 데일리] ${dateStr} — 풀스택 개발자를 위한 AI 뉴스`;
+
+    await publishWithRetry('Naver', () => publishToNaverBlog(title, body), maxAttempts, retryDelayMs);
+    await publishWithRetry('Tistory', () => publishToTistory(title, body), maxAttempts, retryDelayMs);
   } else {
     console.log(`\n[dry-run] 파일 생성됨: _posts/${filename} (push 생략)`);
   }
