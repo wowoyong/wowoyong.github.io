@@ -26,6 +26,14 @@ const TISTORY_CATEGORY = process.env.TISTORY_CATEGORY || '';
 
 const WRITE_URL = (blog) => `https://${blog}.tistory.com/manage/newpost`;
 
+function extractLeafCategory(category) {
+  return category
+    .split(/[/>]/)
+    .map(part => part.trim())
+    .filter(Boolean)
+    .pop() || '';
+}
+
 // ─── 쿠키 저장/복원 헬퍼 ─────────────────────────────────────────────────────
 async function loadCookies(context) {
   if (fs.existsSync(TISTORY_COOKIES)) {
@@ -137,9 +145,7 @@ async function publishToTistory(title, markdownBody) {
 
     // 카테고리 선택
     if (TISTORY_CATEGORY) {
-      const subCategory = TISTORY_CATEGORY.includes('/')
-        ? TISTORY_CATEGORY.split('/').pop()
-        : TISTORY_CATEGORY;
+      const subCategory = extractLeafCategory(TISTORY_CATEGORY);
 
       console.log(`[Tistory] 카테고리 선택: ${subCategory}`);
       try {

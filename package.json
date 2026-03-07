@@ -4,7 +4,13 @@
   "description": "[![Gem Version](https://img.shields.io/gem/v/jekyll-theme-chirpy)][gem]&nbsp; [![GitHub license](https://img.shields.io/github/license/cotes2020/chirpy-starter.svg?color=blue)][mit]",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No automated tests configured\" && exit 0",
+    "daily": "node scripts/daily-digest.js",
+    "daily:dry": "node scripts/daily-digest.js --dry-run",
+    "publish:naver:test": "node scripts/naver-publisher.js --test",
+    "publish:tistory:test": "node scripts/tistory-publisher.js --test",
+    "session:keepalive": "node scripts/session-keepalive.js",
+    "playwright:install": "npx playwright install chromium"
   },
   "repository": {
     "type": "git",
