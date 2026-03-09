@@ -12,7 +12,6 @@ const BLOG_DIR  = '/Users/jojaeyong/WebstormProjects/wowoyong.github.io';
 const SSH_KEY   = '/Users/jojaeyong/.ssh/id_ed25519_wowoyong_new';
 const NODE      = path.join(NODE_BIN, 'node');
 const DRY_RUN   = process.argv.includes('--dry-run');
-const LLM_PROVIDER = process.env.LLM_PROVIDER || 'claude';
 const PUBLISH_RETRY_COUNT = parseInt(process.env.PUBLISH_RETRY_COUNT || '2', 10);
 const PUBLISH_RETRY_DELAY_MS = parseInt(process.env.PUBLISH_RETRY_DELAY_MS || '20000', 10);
 
@@ -24,6 +23,7 @@ if (fs.existsSync(configPath)) {
     if (eq > 0) process.env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
   });
 }
+const LLM_PROVIDER = process.env.LLM_PROVIDER || 'claude';
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || '';
 
 // ─── Fetch Helpers ────────────────────────────────────────────────────────────
@@ -184,6 +184,8 @@ ${youtube.length > 0 ? `## 이번 주 추천 영상
   console.log('[Claude] 요약 생성 중...');
   let result;
   if (LLM_PROVIDER === 'codex') {
+    const codexEnv = { ...process.env, PATH: `${NODE_BIN}:${process.env.PATH}` };
+    delete codexEnv.CLAUDECODE;
     result = spawnSync(
       'codex',
       ['exec', '--dangerously-bypass-approvals-and-sandbox', '--skip-git-repo-check', prompt],
@@ -191,7 +193,7 @@ ${youtube.length > 0 ? `## 이번 주 추천 영상
         encoding: 'utf8',
         timeout: 180000,
         maxBuffer: 10 * 1024 * 1024,
-        env: { ...process.env, PATH: `${NODE_BIN}:${process.env.PATH}` }
+        env: codexEnv
       }
     );
   } else {
