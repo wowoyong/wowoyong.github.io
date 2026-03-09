@@ -12,6 +12,7 @@ const BLOG_DIR  = '/Users/jojaeyong/WebstormProjects/wowoyong.github.io';
 const SSH_KEY   = '/Users/jojaeyong/.ssh/id_ed25519_wowoyong_new';
 const NODE      = path.join(NODE_BIN, 'node');
 const DRY_RUN   = process.argv.includes('--dry-run');
+const LLM_PROVIDER = process.env.LLM_PROVIDER || 'claude';
 const PUBLISH_RETRY_COUNT = parseInt(process.env.PUBLISH_RETRY_COUNT || '2', 10);
 const PUBLISH_RETRY_DELAY_MS = parseInt(process.env.PUBLISH_RETRY_DELAY_MS || '20000', 10);
 
@@ -181,18 +182,33 @@ ${youtube.length > 0 ? `## 이번 주 추천 영상
 규칙: 모든 텍스트는 한국어, 기술 용어·고유명사·URL은 영어 유지.`;
 
   console.log('[Claude] 요약 생성 중...');
-  const result = spawnSync(
-    NODE,
-    [CLAUDE, '-p', prompt, '--model', 'claude-haiku-4-5-20251001'],
-    {
-      encoding: 'utf8',
-      timeout: 180000,
-      maxBuffer: 10 * 1024 * 1024,
-      env: { ...process.env, PATH: `${NODE_BIN}:${process.env.PATH}` }
-    }
-  );
+  let result;
+  if (LLM_PROVIDER === 'codex') {
+    result = spawnSync(
+      'codex',
+      ['exec', '--dangerously-bypass-approvals-and-sandbox', '--skip-git-repo-check', prompt],
+      {
+        encoding: 'utf8',
+        timeout: 180000,
+        maxBuffer: 10 * 1024 * 1024,
+        env: { ...process.env, PATH: `${NODE_BIN}:${process.env.PATH}` }
+      }
+    );
+  } else {
+    // 기존 Claude 코드 (유지)
+    result = spawnSync(
+      NODE,
+      [CLAUDE, '-p', prompt, '--model', 'claude-haiku-4-5-20251001'],
+      {
+        encoding: 'utf8',
+        timeout: 180000,
+        maxBuffer: 10 * 1024 * 1024,
+        env: { ...process.env, PATH: `${NODE_BIN}:${process.env.PATH}` }
+      }
+    );
+  }
 
-  if (result.status !== 0) throw new Error(`Claude 실패: ${result.stderr}`);
+  if (result.status !== 0) throw new Error(`LLM 실패: ${result.stderr}`);
   return result.stdout.trim();
 }
 
