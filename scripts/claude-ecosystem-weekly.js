@@ -200,10 +200,28 @@ async function fetchAnthropicOrgRepos() {
     }));
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-async function main() {
-  console.log('=== Claude 생태계 주간 — 전체 데이터 수집 테스트 ===');
-  const [mcp, skills, plugins, projects, awesomeMcp, awesomeClaude, official] = await Promise.all([
+// ─── 중복 제거 + 병합 ─────────────────────────────────────────────────────────
+
+function deduplicateCategory(items, seenSet, maxItems = 10) {
+  const unique = [...new Map(items.map(r => [r.name, r])).values()];
+  return unique
+    .filter(r => !seenSet.has(r.name))
+    .sort((a, b) => b.stars - a.stars)
+    .slice(0, maxItems);
+}
+
+function mergeAndDeduplicate(githubItems, awesomeItems) {
+  const githubNames = new Set(githubItems.map(r => r.name));
+  const extraFromAwesome = awesomeItems.filter(r => !githubNames.has(r.name));
+  return [...githubItems, ...extraFromAwesome];
+}
+
+async function collectAllData(seenSet) {
+  console.log('[수집] 모든 데이터 소스 병렬 조회 중...');
+  const [
+    ghMcp, ghSkills, ghPlugins, ghProjects,
+    awMcp, awClaude, official
+  ] = await Promise.all([
     fetchMcpServers().catch(() => []),
     fetchSkillsCommands().catch(() => []),
     fetchPluginsExtensions().catch(() => []),
@@ -212,11 +230,28 @@ async function main() {
     fetchAwesomeClaudeCode().catch(() => []),
     fetchAnthropicOrgRepos().catch(() => []),
   ]);
-  console.log(`GitHub MCP: ${mcp.length}, Awesome MCP: ${awesomeMcp.length}`);
-  console.log(`GitHub Skills: ${skills.length}, Awesome Claude: ${awesomeClaude.length}`);
-  console.log(`GitHub Plugins: ${plugins.length}`);
-  console.log(`GitHub Projects: ${projects.length}`);
-  console.log(`Anthropic 공식 Org: ${official.length}개`);
+
+  const mcpAll     = mergeAndDeduplicate(ghMcp, awMcp);
+  const skillsAll  = mergeAndDeduplicate(ghSkills, awClaude.filter(r => r.name.toLowerCase().includes('skill') || r.name.toLowerCase().includes('command')));
+  const pluginsAll = mergeAndDeduplicate(ghPlugins, awClaude.filter(r => r.name.toLowerCase().includes('plugin') || r.name.toLowerCase().includes('extension')));
+  const projectsAll = mergeAndDeduplicate(ghProjects, official);
+
+  return {
+    mcp:      deduplicateCategory(mcpAll, seenSet),
+    skills:   deduplicateCategory(skillsAll, seenSet),
+    plugins:  deduplicateCategory(pluginsAll, seenSet),
+    projects: deduplicateCategory(projectsAll, seenSet),
+  };
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+async function main() {
+  const state   = loadState();
+  const seenSet = new Set(state.seenRepos || []);
+  const data    = await collectAllData(seenSet);
+  console.log(`최종 MCP: ${data.mcp.length}, Skills: ${data.skills.length}, Plugins: ${data.plugins.length}, Projects: ${data.projects.length}`);
+  const total = [...data.mcp, ...data.skills, ...data.plugins, ...data.projects].length;
+  console.log(`총 ${total}개 항목 (중복 제거 후)`);
 }
 
 main().catch(err => {
