@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-03-10T14:50:08.836Z",
+  "lastRun": "2026-03-10T15:03:40.151Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -37,6 +37,34 @@
     "modelcontextprotocol/registry",
     "anthropics/claude-code-action",
     "anthropics/financial-services-plugins",
-    "ChrisWiles/claude-code-showcase"
+    "ChrisWiles/claude-code-showcase",
+    "punkpeye/awesome-mcp-clients/",
+    "1mcp-app/agent",
+    "Aganium/agenium",
+    "espadaw/Agent47",
+    "AgentHotspot/agenthotspot-mcp",
+    "rhein1/agoragentic-integrations",
+    "ariekogan/ateam-mcp",
+    "askbudi/roundtable",
+    "blockrunai/blockrun-mcp",
+    "Data-Everything/mcp-server-templates",
+    "K-Dense-AI/claude-scientific-skills",
+    "robertguss/claude-skills",
+    "akin-ozer/cc-devops-skills",
+    "dreamiurg/claude-mountaineering-skills",
+    "skills-directory/skill-codex",
+    "jeffallan/claude-skills",
+    "jawwadfirdousi/agent-skills",
+    "EveryInc/compound-engineering-plugin",
+    "anthropics/claude-cookbooks",
+    "anthropics/prompt-eng-interactive-tutorial",
+    "kodu-ai/claude-coder",
+    "heilcheng/awesome-agent-skills",
+    "sdi2200262/agentic-project-management",
+    "anthropics/claude-agent-sdk-demos",
+    "IvanMurzak/Unity-MCP",
+    "wesammustafa/Claude-Code-Everything-You-Need-to-Know",
+    "softaworks/agent-toolkit",
+    "disler/infinite-agentic-loop"
   ]
 }
