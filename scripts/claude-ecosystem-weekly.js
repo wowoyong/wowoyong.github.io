@@ -124,20 +124,99 @@ async function fetchClaudeProjects() {
   ]);
 }
 
+// ─── Awesome 큐레이션 파싱 ────────────────────────────────────────────────────
+
+// README에서 GitHub 링크 추출 (- [name](url) — description 패턴)
+function parseAwesomeReadme(text, maxItems = 20) {
+  const results = [];
+  const lines = text.split('\n');
+  const ghLinkRe = /\[([^\]]+)\]\((https:\/\/github\.com\/[^)]+)\)/;
+  for (const line of lines) {
+    const m = line.match(ghLinkRe);
+    if (!m) continue;
+    const [, name, url] = m;
+    const descMatch = line.replace(m[0], '').match(/[-–—]\s*(.+)/);
+    results.push({
+      name: url.replace('https://github.com/', ''),
+      description: descMatch ? descMatch[1].trim() : '',
+      url,
+      stars: 0,
+      language: '',
+      topics: [],
+      source: 'awesome'
+    });
+    if (results.length >= maxItems) break;
+  }
+  return results;
+}
+
+async function fetchAwesomeMcpServers() {
+  try {
+    const text = await fetchText('https://raw.githubusercontent.com/punkpeye/awesome-mcp-servers/main/README.md');
+    return parseAwesomeReadme(text, 20);
+  } catch (e) {
+    console.warn('[Awesome MCP] 파싱 실패:', e.message);
+    return [];
+  }
+}
+
+async function fetchAwesomeClaudeCode() {
+  const candidates = [
+    'https://raw.githubusercontent.com/hesreallyhim/awesome-claude-code/main/README.md',
+    'https://raw.githubusercontent.com/anthropics/awesome-claude-code/main/README.md',
+  ];
+  for (const url of candidates) {
+    try {
+      const text = await fetchText(url);
+      return parseAwesomeReadme(text, 20);
+    } catch (_) {}
+  }
+  console.warn('[Awesome Claude] 사용 가능한 레포 없음');
+  return [];
+}
+
+// ─── Anthropic 공식 Org 추적 ──────────────────────────────────────────────────
+async function fetchAnthropicOrgRepos() {
+  const orgs = ['anthropics', 'modelcontextprotocol'];
+  const results = await Promise.all(
+    orgs.map(org =>
+      fetchJSON(`https://api.github.com/orgs/${org}/repos?sort=updated&per_page=10&type=public`)
+        .catch(e => { console.warn(`[Org] ${org} 실패: ${e.message}`); return []; })
+    )
+  );
+  const all = results.flat();
+  return all
+    .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+    .slice(0, 10)
+    .map(r => ({
+      name: r.full_name,
+      description: r.description || '',
+      url: r.html_url,
+      stars: r.stargazers_count,
+      language: r.language || '',
+      topics: r.topics || [],
+      updatedAt: r.updated_at,
+      source: 'official'
+    }));
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
-  console.log('=== Claude 생태계 주간 — 데이터 수집 테스트 ===');
-  const [mcp, skills, plugins, projects] = await Promise.all([
-    fetchMcpServers().catch(e => { console.error('[MCP]', e.message); return []; }),
-    fetchSkillsCommands().catch(e => { console.error('[Skills]', e.message); return []; }),
-    fetchPluginsExtensions().catch(e => { console.error('[Plugins]', e.message); return []; }),
-    fetchClaudeProjects().catch(e => { console.error('[Projects]', e.message); return []; }),
+  console.log('=== Claude 생태계 주간 — 전체 데이터 수집 테스트 ===');
+  const [mcp, skills, plugins, projects, awesomeMcp, awesomeClaude, official] = await Promise.all([
+    fetchMcpServers().catch(() => []),
+    fetchSkillsCommands().catch(() => []),
+    fetchPluginsExtensions().catch(() => []),
+    fetchClaudeProjects().catch(() => []),
+    fetchAwesomeMcpServers().catch(() => []),
+    fetchAwesomeClaudeCode().catch(() => []),
+    fetchAnthropicOrgRepos().catch(() => []),
   ]);
-  console.log(`MCP 서버: ${mcp.length}개`);
-  console.log(`Skills/Commands: ${skills.length}개`);
-  console.log(`Plugins/Extensions: ${plugins.length}개`);
-  console.log(`활용 프로젝트: ${projects.length}개`);
-  if (mcp.length > 0) console.log('MCP 샘플:', mcp[0].name, mcp[0].stars + '★');
+  console.log(`GitHub MCP: ${mcp.length}, Awesome MCP: ${awesomeMcp.length}`);
+  console.log(`GitHub Skills: ${skills.length}, Awesome Claude: ${awesomeClaude.length}`);
+  console.log(`GitHub Plugins: ${plugins.length}`);
+  console.log(`GitHub Projects: ${projects.length}`);
+  console.log(`Anthropic 공식 Org: ${official.length}개`);
 }
 
 main().catch(err => {
