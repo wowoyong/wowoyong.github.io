@@ -306,6 +306,15 @@ async function main() {
   const dateStr = kstNow.toISOString().slice(0, 10);
 
   console.log(`\n=== 테크 인사이드 생성: ${dateStr} ===`);
+
+  // ─── 중복 방지 ──────────────────────────────────────────────
+  const weekFile = path.join(BLOG_DIR, '_posts', `${dateStr}-eng-digest.md`);
+  if (fs.existsSync(weekFile) && !process.argv.includes('--force')) {
+    console.log(`[스킵] ${dateStr} 테크 인사이드 포스트가 이미 있습니다.`);
+    console.log(`재생성하려면 --force 플래그를 사용하세요.`);
+    process.exit(0);
+  }
+
   if (DRY_RUN) console.log('[dry-run 모드: git push 생략]');
 
   const seenMap = loadSeenUrls();

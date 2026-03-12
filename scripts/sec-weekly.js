@@ -29,6 +29,13 @@ if (fs.existsSync(configPath)) {
 const LLM_PROVIDER = process.env.LLM_PROVIDER || 'claude';
 const NVD_API_KEY  = process.env.NVD_API_KEY  || '';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+const PUBLISH_RETRY_COUNT    = parseInt(process.env.PUBLISH_RETRY_COUNT || '2', 10);
+const PUBLISH_RETRY_DELAY_MS = parseInt(process.env.PUBLISH_RETRY_DELAY_MS || '20000', 10);
+
+// NVD API 키 미설정 경고
+if (!NVD_API_KEY) {
+  console.warn('[경고] NVD_API_KEY 없음 — rate limit 적용 (초당 5회). scripts/config.env에 추가 권장.');
+}
 
 // ─── 유틸 ──────────────────────────────────────────────────────────────────────
 function sleep(ms) {
@@ -326,6 +333,15 @@ async function main() {
   const weekKey = getIsoWeek(kstNow);
 
   console.log(`\n=== 보안 주간 생성: ${dateStr} (${weekKey}) ===`);
+
+  // ─── 중복 방지 ──────────────────────────────────────────────
+  const weekFile = path.join(BLOG_DIR, '_posts', `${dateStr}-sec-weekly.md`);
+  if (fs.existsSync(weekFile) && !process.argv.includes('--force')) {
+    console.log(`[스킵] ${dateStr} 보안 위클리 포스트가 이미 있습니다.`);
+    console.log(`재생성하려면 --force 플래그를 사용하세요.`);
+    process.exit(0);
+  }
+
   if (DRY_RUN) console.log('[dry-run 모드: git push 생략]');
 
   const state = loadState();
@@ -370,18 +386,26 @@ async function main() {
     gitPush(filename, dateStr);
     console.log(`\n완료: https://wowoyong.github.io/posts/${dateStr}-sec-weekly/`);
     const title = `[개발자 보안] ${dateStr} — 이번 주 주요 취약점`;
-    try {
-      const { publishToNaverBlog } = require('./naver-publisher');
-      await publishToNaverBlog(title, body, '개발자 보안');
-    } catch (e) {
-      console.error('[Naver] 발행 실패 (GitHub Pages는 정상):', e.message);
+
+    async function publishWithRetry(fn, label) {
+      for (let i = 0; i <= PUBLISH_RETRY_COUNT; i++) {
+        try { await fn(); return true; }
+        catch (e) {
+          if (i < PUBLISH_RETRY_COUNT) {
+            console.warn(`[${label}] 실패(${i+1}/${PUBLISH_RETRY_COUNT}): ${e.message} — ${PUBLISH_RETRY_DELAY_MS/1000}초 후 재시도`);
+            await new Promise(r => setTimeout(r, PUBLISH_RETRY_DELAY_MS));
+          } else {
+            console.error(`[${label}] 최종 실패 (GitHub Pages는 정상):`, e.message);
+            return false;
+          }
+        }
+      }
     }
-    try {
-      const { publishToTistory } = require('./tistory-publisher');
-      await publishToTistory(title, body, '개발자 보안');
-    } catch (e) {
-      console.error('[Tistory] 발행 실패 (GitHub Pages는 정상):', e.message);
-    }
+
+    const { publishToNaverBlog } = require('./naver-publisher');
+    const { publishToTistory }   = require('./tistory-publisher');
+    await publishWithRetry(() => publishToNaverBlog(title, body, '개발자 보안'), 'Naver');
+    await publishWithRetry(() => publishToTistory(title, body, '개발자 보안'), 'Tistory');
   } else {
     console.log(`\n[dry-run] 파일 생성됨: _posts/${filename} (push 생략)`);
   }

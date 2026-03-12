@@ -49,9 +49,12 @@ async function fetchJSON(url, headers = {}) {
     signal: AbortSignal.timeout(20000)
   });
   if (res.status === 403 || res.status === 429) {
-    console.warn(`[API] Rate limit (${res.status}), 30초 대기 후 재시도`);
+    if ((headers.__retries || 0) >= 3) {
+      throw new Error(`Rate limit 초과, 재시도 소진: ${url}`);
+    }
+    console.warn(`[API] Rate limit (${res.status}), 30초 대기 후 재시도 (남은: ${3 - (headers.__retries || 0)}회)`);
     await sleep(30000);
-    return fetchJSON(url, headers);
+    return fetchJSON(url, { ...headers, __retries: (headers.__retries || 0) + 1 });
   }
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
   return res.json();
@@ -418,6 +421,15 @@ async function main() {
   const dateStr = kstNow.toISOString().slice(0, 10);
 
   console.log(`\n=== Claude 생태계 주간 큐레이션: ${dateStr} ===`);
+
+  // ─── 중복 방지 ──────────────────────────────────────────────
+  const weekFile = path.join(BLOG_DIR, '_posts', `${dateStr}-claude-ecosystem.md`);
+  if (fs.existsSync(weekFile) && !process.argv.includes('--force')) {
+    console.log(`[스킵] ${dateStr} Claude 생태계 포스트가 이미 있습니다.`);
+    console.log(`재생성하려면 --force 플래그를 사용하세요.`);
+    process.exit(0);
+  }
+
   if (DRY_RUN) console.log('[dry-run 모드: LLM 호출 + git push 생략]');
 
   const state   = loadState();

@@ -326,6 +326,15 @@ async function main() {
   const startTs   = Math.floor(startTime.getTime() / 1000);
 
   console.log(`\n=== AI 데일리 생성: ${dateStr} ===`);
+
+  // ─── 중복 방지 ──────────────────────────────────────────────
+  const todayFile = path.join(BLOG_DIR, '_posts', `${dateStr}-ai-daily.md`);
+  if (fs.existsSync(todayFile) && !process.argv.includes('--force')) {
+    console.log(`[스킵] ${dateStr} AI 데일리 포스트가 이미 있습니다.`);
+    console.log(`재생성하려면 --force 플래그를 사용하세요.`);
+    process.exit(0);
+  }
+
   console.log(`수집 범위: ${startTime.toISOString()} ~ ${now.toISOString()}`);
   if (DRY_RUN) console.log('[dry-run 모드: git push 생략]');
 

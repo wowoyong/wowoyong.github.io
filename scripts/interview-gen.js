@@ -13,6 +13,38 @@ const SSH_KEY   = '/Users/jojaeyong/.ssh/id_ed25519_wowoyong_new';
 const NODE      = path.join(NODE_BIN, 'node');
 const DRY_RUN   = process.argv.includes('--dry-run');
 
+// ─── Topics 관리 ──────────────────────────────────────────────────────────────
+const TOPICS_PATH = path.join(__dirname, 'interview-topics.json');
+
+function pickUnusedTopic() {
+  if (!fs.existsSync(TOPICS_PATH)) return null;
+  try {
+    const data = JSON.parse(fs.readFileSync(TOPICS_PATH, 'utf8'));
+    const allItems = (data.topics || []).flatMap(cat => cat.items || []);
+    if (allItems.length === 0) return null;
+    const used = data.used || [];
+    const available = allItems.filter(t => !used.includes(t.slug));
+    const pool = available.length > 0 ? available : allItems;
+    return pool[Math.floor(Math.random() * pool.length)];
+  } catch (e) {
+    console.warn('[topics] 로드 실패:', e.message);
+    return null;
+  }
+}
+
+function markTopicUsed(topic) {
+  if (!topic || !fs.existsSync(TOPICS_PATH)) return;
+  try {
+    const data = JSON.parse(fs.readFileSync(TOPICS_PATH, 'utf8'));
+    if (!data.used) data.used = [];
+    if (!data.used.includes(topic.slug)) data.used.push(topic.slug);
+    data.lastUsed = { slug: topic.slug, title: topic.titleShort, date: new Date().toISOString().slice(0, 10) };
+    fs.writeFileSync(TOPICS_PATH, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.warn('[topics] 저장 실패:', e.message);
+  }
+}
+
 // config.env 로드
 const configPath = path.join(__dirname, 'config.env');
 if (fs.existsSync(configPath)) {
@@ -237,7 +269,24 @@ async function main() {
   const dateStr = kstNow.toISOString().slice(0, 10);
 
   console.log(`\n=== 기술 면접 포스트 생성: ${dateStr} ===`);
+
+  // ─── 중복 방지 ──────────────────────────────────────────────
+  const todayFile = path.join(BLOG_DIR, '_posts', `${dateStr}-interview.md`);
+  if (fs.existsSync(todayFile) && !process.argv.includes('--force')) {
+    console.log(`[스킵] ${dateStr} 기술 면접 포스트가 이미 있습니다.`);
+    console.log(`재생성하려면 --force 플래그를 사용하세요.`);
+    process.exit(0);
+  }
+
   if (DRY_RUN) console.log('[dry-run 모드: git push 생략]');
+
+  // ─── 주제 선택 ──────────────────────────────────────────────
+  const selectedTopic = pickUnusedTopic();
+  if (selectedTopic) {
+    console.log(`[주제] ${selectedTopic.titleShort} (${selectedTopic.slug})`);
+  } else {
+    console.log('[주제] topics.json 미사용 — LLM 자유 선택');
+  }
 
   console.log('[트렌드] HN + GitHub 수집 중...');
   const [hnTitles, githubRepos] = await Promise.all([
@@ -246,13 +295,17 @@ async function main() {
   ]);
   console.log(`[트렌드] HN=${hnTitles.length}개, GitHub=${githubRepos.length}개`);
 
-  const prompt = buildPrompt(hnTitles, githubRepos, dateStr);
+  const topicHint = selectedTopic
+    ? `\n\n## 오늘 면접 주제 (반드시 이 주제로 Q&A를 작성하세요)\n- 주제: ${selectedTopic.titleShort}\n- 설명: ${selectedTopic.description}\n- 권장 태그: ${(selectedTopic.tags || []).join(', ')}\n- 대상 레벨: ${selectedTopic.level}`
+    : '';
+  const prompt = buildPrompt(hnTitles, githubRepos, dateStr) + topicHint;
   console.log('[LLM] 면접 Q&A 생성 중...');
   const rawBody  = callLLM(prompt);
   const { filename, subject, body } = writePost(dateStr, rawBody);
 
   if (!DRY_RUN) {
     gitPush(filename, dateStr);
+    if (selectedTopic) markTopicUsed(selectedTopic);
     console.log(`\n완료: https://wowoyong.github.io/posts/${dateStr}-interview/`);
     const title = `[기술 면접] ${dateStr} — ${subject}`;
     await publishAll(title, body, '기술 면접', '기술 면접');
