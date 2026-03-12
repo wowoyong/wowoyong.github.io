@@ -1,0 +1,22 @@
+# wowoyong.github.io 블로그 자동화 crontab
+# 등록: crontab .claude/crontab.txt  (프로젝트 루트에서 실행)
+# 확인: crontab -l
+# 시스템 시간: KST (Mac 로컬 기준)
+
+# AI 데일리 — 매일 오전 8:00
+0 8 * * * /Users/jojaeyong/.nvm/versions/node/v20.20.0/bin/node scripts/daily-digest.js >> scripts/logs/daily-digest.log 2>&1
+
+# 코딩 테스트 — 매일 오전 9:30
+30 9 * * * cd /Users/jojaeyong/WebstormProjects/wowoyong.github.io && /Users/jojaeyong/.nvm/versions/node/v20.20.0/bin/node scripts/coding-test-gen.js >> scripts/logs/coding-test.log 2>&1
+
+# 기술 면접 — 화/목 오전 9:00
+0 9 * * 2,4 cd /Users/jojaeyong/WebstormProjects/wowoyong.github.io && /Users/jojaeyong/.nvm/versions/node/v20.20.0/bin/node scripts/interview-gen.js >> scripts/logs/interview.log 2>&1
+
+# 테크 인사이드 — 매주 수요일 오전 9:00
+0 9 * * 3 cd /Users/jojaeyong/WebstormProjects/wowoyong.github.io && /Users/jojaeyong/.nvm/versions/node/v20.20.0/bin/node scripts/eng-digest.js >> scripts/logs/eng-digest.log 2>&1
+
+# 개발자 보안 — 매주 금요일 오전 9:00
+0 9 * * 5 cd /Users/jojaeyong/WebstormProjects/wowoyong.github.io && /Users/jojaeyong/.nvm/versions/node/v20.20.0/bin/node scripts/sec-weekly.js >> scripts/logs/sec-weekly.log 2>&1
+
+# Claude 생태계 주간 — 매주 월요일 오전 8:00
+0 8 * * 1 cd /Users/jojaeyong/WebstormProjects/wowoyong.github.io && /Users/jojaeyong/.nvm/versions/node/v20.20.0/bin/node scripts/claude-ecosystem-weekly.js >> scripts/logs/claude-ecosystem.log 2>&1

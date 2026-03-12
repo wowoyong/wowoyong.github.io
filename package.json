@@ -5,12 +5,45 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"No automated tests configured\" && exit 0",
+
     "daily": "node scripts/daily-digest.js",
     "daily:dry": "node scripts/daily-digest.js --dry-run",
+    "daily:force": "node scripts/daily-digest.js --force",
+
+    "coding": "node scripts/coding-test-gen.js",
+    "coding:dry": "node scripts/coding-test-gen.js --dry-run",
+    "coding:force": "node scripts/coding-test-gen.js --force",
+
+    "interview": "node scripts/interview-gen.js",
+    "interview:dry": "node scripts/interview-gen.js --dry-run",
+    "interview:force": "node scripts/interview-gen.js --force",
+
+    "eng": "node scripts/eng-digest.js",
+    "eng:dry": "node scripts/eng-digest.js --dry-run",
+    "eng:force": "node scripts/eng-digest.js --force",
+
+    "sec": "node scripts/sec-weekly.js",
+    "sec:dry": "node scripts/sec-weekly.js --dry-run",
+    "sec:force": "node scripts/sec-weekly.js --force",
+
+    "eco": "node scripts/claude-ecosystem-weekly.js",
+    "eco:dry": "node scripts/claude-ecosystem-weekly.js --dry-run",
+    "eco:force": "node scripts/claude-ecosystem-weekly.js --force",
+
+    "publish": "node scripts/publish-post.js today ai-daily \"AI 개발 뉴스\"",
+    "publish:coding": "node scripts/publish-post.js today coding-test \"코딩 테스트\"",
+    "publish:interview": "node scripts/publish-post.js today interview \"기술 면접\"",
+    "publish:eng": "node scripts/publish-post.js today eng-digest \"테크 인사이드\"",
+    "publish:sec": "node scripts/publish-post.js today sec-weekly \"개발자 보안\"",
+    "publish:eco": "node scripts/publish-post.js today claude-ecosystem \"Claude 생태계\"",
+
     "publish:naver:test": "node scripts/naver-publisher.js --test",
     "publish:tistory:test": "node scripts/tistory-publisher.js --test",
     "session:keepalive": "node scripts/session-keepalive.js",
-    "playwright:install": "npx playwright install chromium"
+    "playwright:install": "npx playwright install chromium",
+
+    "logs": "tail -50 scripts/logs/daily-digest.log 2>/dev/null || echo '로그 없음'",
+    "logs:err": "grep -i 'error\\|fail\\|fatal' scripts/logs/*.log 2>/dev/null | tail -20 || echo '에러 없음'"
   },
   "repository": {
     "type": "git",

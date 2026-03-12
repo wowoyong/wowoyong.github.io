@@ -35,6 +35,8 @@ scripts/tistory-auth.json
 scripts/naver-cookies.json
 scripts/tistory-cookies.json
 scripts/session-keepalive.log
+scripts/logs/*.log
+scripts/*.log
 .playwright-naver/
 .playwright-tistory/
 .playwright-data/
