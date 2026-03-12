@@ -41,7 +41,7 @@ async function loadCookies(context) {
       const cookies = JSON.parse(fs.readFileSync(TISTORY_COOKIES, 'utf8'));
       await context.addCookies(cookies);
       return true;
-    } catch (_) {}
+    } catch (e) { console.warn('[Tistory] 쿠키 로드 실패 (재로그인 필요):', e.message); }
   }
   return false;
 }
@@ -101,17 +101,18 @@ async function tistoryLogin() {
 
   // 2단계 인증 대기 (카카오톡 승인 필요)
   if (!page.url().includes('/manage')) {
-    console.log('[Tistory] 카카오톡 2단계 인증 대기 (3분)...');
+    const kakao2faTimeout = parseInt(process.env.KAKAO_2FA_TIMEOUT_MS || '180000', 10);
+    console.log(`[Tistory] 카카오톡 2단계 인증 대기 (${kakao2faTimeout/1000}초)...`);
     try {
       const checkbox = await page.$('input[type="checkbox"]');
       if (checkbox) await checkbox.click();
-    } catch (_) {}
+    } catch (e) { console.warn('[Tistory] 체크박스 클릭 실패:', e.message); }
 
     try {
       await page.waitForURL(url => {
         try { return new URL(url).hostname.includes('tistory.com') && !url.href.includes('/auth/login'); }
         catch (_) { return false; }
-      }, { timeout: 180000 });
+      }, { timeout: kakao2faTimeout });
     } catch (_) {
       throw new Error('[Tistory] 카카오 로그인 시간 초과');
     }
@@ -201,6 +202,7 @@ async function publishToTistory(title, markdownBody, category = TISTORY_CATEGORY
         });
 
         htmlBody = htmlBody.replace(/^---$/gm, '<hr>');
+        htmlBody = htmlBody.replace(/^# (.+)$/gm, '<h1>$1</h1>');
         htmlBody = htmlBody.replace(/^### (.+)$/gm, '<h3>$1</h3>');
         htmlBody = htmlBody.replace(/^## (.+)$/gm, '<h2>$1</h2>');
         htmlBody = htmlBody.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -209,6 +211,16 @@ async function publishToTistory(title, markdownBody, category = TISTORY_CATEGORY
         htmlBody = htmlBody.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
         htmlBody = htmlBody.replace(/^- (.+)$/gm, '<li>$1</li>');
         htmlBody = htmlBody.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
+        // 이미지
+        htmlBody = htmlBody.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+          '<img alt="$1" src="$2" style="max-width:100%;height:auto;display:block;margin:8px 0;">');
+        // 테이블 구분선 제거 후 행 변환
+        htmlBody = htmlBody.replace(/\|[-: |]+\|\n?/g, '');
+        htmlBody = htmlBody.replace(/^\|(.+)\|$/gm, (_, row) => {
+          const cells = row.split('|').map(c => c.trim());
+          return '<div style="display:flex;gap:12px;padding:4px 0;border-bottom:1px solid #eee;">' +
+            cells.map(c => `<span style="flex:1;">${c}</span>`).join('') + '</div>';
+        });
         htmlBody = htmlBody.replace(/\n\n/g, '<br><br>');
         htmlBody = htmlBody.replace(/\n/g, '<br>');
         htmlBody = htmlBody.replace(/(<br>){3,}/g, '<br><br>');

@@ -42,7 +42,7 @@ async function loadCookies(context) {
       const cookies = JSON.parse(fs.readFileSync(NAVER_COOKIES, 'utf8'));
       await context.addCookies(cookies);
       return true;
-    } catch (_) {}
+    } catch (e) { console.warn('[Naver] 쿠키 로드 실패 (재로그인 필요):', e.message); }
   }
   return false;
 }
@@ -75,6 +75,8 @@ function convertMarkdownForNaver(md) {
   let text = source;
   let html = source;
 
+  // H1 처리 (text용: 제거, html용: H2로 변환)
+  text = text.replace(/^# (.+)$/gm, '$1');
   text = text.replace(/^## (.+)$/gm, '$1');
   text = text.replace(/^### (.+)$/gm, '$1');
   text = text.replace(/\*\*(.+?)\*\*/g, '$1');
@@ -84,6 +86,8 @@ function convertMarkdownForNaver(md) {
   text = text.replace(/^- (.+)$/gm, '• $1');
 
   html = escapeHtml(html);
+  // H1 → H2 스타일로
+  html = html.replace(/^# (.+)$/gm, '<div style="margin:22px 0 10px;font-size:22px;font-weight:800;border-bottom:2px solid #03c75a;padding-bottom:6px;">$1</div>');
   html = html.replace(/^## (.+)$/gm, '<div style="margin:18px 0 8px;font-size:20px;font-weight:700;">$1</div>');
   html = html.replace(/^### (.+)$/gm, '<div style="margin:14px 0 6px;font-size:17px;font-weight:700;">$1</div>');
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -100,6 +104,17 @@ function convertMarkdownForNaver(md) {
     '<div style="margin:10px 0;padding:10px 12px;border-left:4px solid #03c75a;background:#f6fbf8;"><strong>Highlight.</strong> $1</div>'
   );
   html = html.replace(/^- (.+)$/gm, '<div style="margin:2px 0 2px 12px;">• $1</div>');
+  // 이미지
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,
+    '<img alt="$1" src="$2" style="max-width:100%;height:auto;display:block;margin:8px 0;">');
+  // 테이블 구분선 제거 후 행 변환
+  html = html.replace(/\|[-: |]+\|\n?/g, '');
+  html = html.replace(/^\|(.+)\|$/gm, (_, row) => {
+    const cells = row.split('|').map(c => c.trim());
+    return '<div style="display:flex;gap:16px;padding:4px 0;">' +
+      cells.map(c => `<span style="flex:1;">${c}</span>`).join('') +
+      '</div>';
+  });
 
   for (let i = 0; i < codeBlocks.length; i += 1) {
     const token = `__CODE_BLOCK_${i}__`;
