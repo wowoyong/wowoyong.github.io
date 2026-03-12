@@ -209,10 +209,12 @@ function callLLM(prompt) {
 }
 
 // ─── 포스트 저장 ──────────────────────────────────────────────────────────────
-function writePost(dateStr, rawBody) {
+function writePost(dateStr, rawBody, selectedTopic) {
   // SUBJECT 줄 파싱 후 본문에서 제거
   const subjectMatch = rawBody.match(/^SUBJECT:\s*(.+)$/m);
-  const subject = subjectMatch ? subjectMatch[1].trim() : '오늘의 코딩 테스트';
+  const subject = subjectMatch
+    ? subjectMatch[1].trim()
+    : (selectedTopic ? selectedTopic.titleShort : '오늘의 코딩 테스트');
   const body = rawBody.replace(/^SUBJECT:.*\n?/m, '').trimStart();
 
   const lower = body.toLowerCase();
@@ -312,7 +314,7 @@ async function main() {
   const prompt = buildPrompt(hnTitles, githubRepos, dateStr) + topicHint;
   console.log('[LLM] 문제 + 풀이 생성 중...');
   const rawBody  = callLLM(prompt);
-  const { filename, subject, body } = writePost(dateStr, rawBody);
+  const { filename, subject, body } = writePost(dateStr, rawBody, selectedTopic);
 
   if (!DRY_RUN) {
     gitPush(filename, dateStr);
