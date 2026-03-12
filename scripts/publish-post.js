@@ -30,7 +30,7 @@ const args     = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const flags    = process.argv.slice(2).filter(a => a.startsWith('--'));
 const rawDate  = args[0] || 'today';
 const postType = args[1] || 'ai-daily';
-const category = args[2] || 'AI 개발 뉴스';
+const category = args[2] || process.env.NAVER_CATEGORY || 'AI소식';
 const force    = flags.includes('--force');
 
 function getTodayKST() {

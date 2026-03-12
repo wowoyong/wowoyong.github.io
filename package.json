@@ -30,12 +30,12 @@
     "eco:dry": "node scripts/claude-ecosystem-weekly.js --dry-run",
     "eco:force": "node scripts/claude-ecosystem-weekly.js --force",
 
-    "publish": "node scripts/publish-post.js today ai-daily \"AI 개발 뉴스\"",
-    "publish:coding": "node scripts/publish-post.js today coding-test \"코딩 테스트\"",
-    "publish:interview": "node scripts/publish-post.js today interview \"기술 면접\"",
-    "publish:eng": "node scripts/publish-post.js today eng-digest \"테크 인사이드\"",
-    "publish:sec": "node scripts/publish-post.js today sec-weekly \"개발자 보안\"",
-    "publish:eco": "node scripts/publish-post.js today claude-ecosystem \"Claude 생태계\"",
+    "publish": "node scripts/publish-post.js today ai-daily",
+    "publish:coding": "node scripts/publish-post.js today coding-test",
+    "publish:interview": "node scripts/publish-post.js today interview",
+    "publish:eng": "node scripts/publish-post.js today eng-digest",
+    "publish:sec": "node scripts/publish-post.js today sec-weekly",
+    "publish:eco": "node scripts/publish-post.js today claude-ecosystem",
 
     "publish:naver:test": "node scripts/naver-publisher.js --test",
     "publish:tistory:test": "node scripts/tistory-publisher.js --test",
