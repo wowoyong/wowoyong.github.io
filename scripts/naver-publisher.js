@@ -184,7 +184,7 @@ async function naverLogin() {
 }
 
 // ─── 블로그 발행 ──────────────────────────────────────────────────────────────
-async function publishToNaverBlog(title, markdownBody) {
+async function publishToNaverBlog(title, markdownBody, category = NAVER_CATEGORY) {
   if (!NAVER_BLOG_ID) {
     throw new Error('[Naver] NAVER_BLOG_ID 환경변수가 설정되지 않았습니다.');
   }
@@ -266,8 +266,8 @@ async function publishToNaverBlog(title, markdownBody) {
     await page.waitForTimeout(2000);
 
     // 카테고리 선택
-    if (NAVER_CATEGORY) {
-      const subCategory = extractLeafCategory(NAVER_CATEGORY);
+    if (category) {
+      const subCategory = extractLeafCategory(category);
 
       console.log(`[Naver] 카테고리 선택: ${subCategory}`);
       try {

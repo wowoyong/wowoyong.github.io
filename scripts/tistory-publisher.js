@@ -129,7 +129,7 @@ async function tistoryLogin() {
 }
 
 // ─── 블로그 발행 ──────────────────────────────────────────────────────────────
-async function publishToTistory(title, markdownBody) {
+async function publishToTistory(title, markdownBody, category = TISTORY_CATEGORY) {
   if (!TISTORY_BLOG) {
     throw new Error('[Tistory] TISTORY_BLOG 환경변수가 설정되지 않았습니다.');
   }
@@ -144,8 +144,8 @@ async function publishToTistory(title, markdownBody) {
     await page.waitForTimeout(4000);
 
     // 카테고리 선택
-    if (TISTORY_CATEGORY) {
-      const subCategory = extractLeafCategory(TISTORY_CATEGORY);
+    if (category) {
+      const subCategory = extractLeafCategory(category);
 
       console.log(`[Tistory] 카테고리 선택: ${subCategory}`);
       try {
@@ -188,7 +188,18 @@ async function publishToTistory(title, markdownBody) {
     if (iframe) {
       const frame = await iframe.contentFrame();
       if (frame) {
-        let htmlBody = markdownBody;
+        // 코드 블록을 먼저 토큰으로 보호 (변환 과정에서 깨지지 않도록)
+        const codeBlocks = [];
+        let htmlBody = markdownBody.replace(/```([\w-]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+          const token = `__CODE_${codeBlocks.length}__`;
+          const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const label = lang ? `[${lang}]` : '[code]';
+          codeBlocks.push(
+            `<pre style="background:#f6f8fa;border:1px solid #d8dee4;border-radius:6px;padding:12px 14px;overflow-x:auto;font-family:monospace;font-size:13px;line-height:1.6;"><strong style="display:block;margin-bottom:6px;font-family:sans-serif;font-size:12px;">${label}</strong>${escaped}</pre>`
+          );
+          return token;
+        });
+
         htmlBody = htmlBody.replace(/^---$/gm, '<hr>');
         htmlBody = htmlBody.replace(/^### (.+)$/gm, '<h3>$1</h3>');
         htmlBody = htmlBody.replace(/^## (.+)$/gm, '<h2>$1</h2>');
@@ -201,6 +212,11 @@ async function publishToTistory(title, markdownBody) {
         htmlBody = htmlBody.replace(/\n\n/g, '<br><br>');
         htmlBody = htmlBody.replace(/\n/g, '<br>');
         htmlBody = htmlBody.replace(/(<br>){3,}/g, '<br><br>');
+
+        // 토큰을 실제 코드 블록 HTML로 복원
+        codeBlocks.forEach((html, i) => {
+          htmlBody = htmlBody.replace(`__CODE_${i}__`, html);
+        });
 
         await page.evaluate((html) => {
           if (window.tinymce && tinymce.activeEditor) {

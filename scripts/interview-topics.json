@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "topics": [
+    {
+      "name": "네트워크",
+      "nameEn": "network",
+      "items": [
+        { "slug": "http-vs-https", "titleShort": "HTTP vs HTTPS", "title": "[기술 면접] HTTP vs HTTPS — 면접관이 원하는 답변", "description": "HTTP와 HTTPS 차이, TLS 핸드셰이크, 인증서 체계를 면접 관점에서 정리합니다.", "tags": ["http", "https", "tls", "ssl"], "level": "junior" },
+        { "slug": "tcp-vs-udp", "titleShort": "TCP vs UDP", "title": "[기술 면접] TCP vs UDP — 3-way handshake부터 실전까지", "description": "TCP/UDP 차이, 3-way handshake, 실제 적용 사례를 면접 관점에서 정리합니다.", "tags": ["tcp", "udp", "network", "socket"], "level": "junior" },
+        { "slug": "rest-api-design", "titleShort": "REST API 설계 원칙", "title": "[기술 면접] REST API 설계 원칙 — 면접관이 파고드는 질문들", "description": "RESTful 제약 조건, HTTP 메서드 선택, 상태 코드 설계를 면접 관점에서 정리합니다.", "tags": ["rest", "api", "http", "restful"], "level": "junior" },
+        { "slug": "websocket", "titleShort": "WebSocket vs HTTP", "title": "[기술 면접] WebSocket — 양방향 통신의 모든 것", "description": "WebSocket 핸드셰이크, HTTP vs WebSocket, 실시간 기능 구현을 면접 관점에서 정리합니다.", "tags": ["websocket", "http", "realtime", "network"], "level": "junior" },
+        { "slug": "dns-cname-a-record", "titleShort": "DNS 동작 원리", "title": "[기술 면접] DNS 동작 원리 — A 레코드부터 캐싱까지", "description": "DNS 재귀 조회, TTL, CDN 연계, 캐싱 문제를 면접 관점에서 정리합니다.", "tags": ["dns", "cdn", "network", "caching"], "level": "junior" },
+        { "slug": "cors", "titleShort": "CORS", "title": "[기술 면접] CORS — preflight부터 해결책까지", "description": "Same-Origin Policy, CORS 헤더, preflight 요청, 실무 해결책을 면접 관점에서 정리합니다.", "tags": ["cors", "http", "security", "browser"], "level": "junior" }
+      ]
+    },
+    {
+      "name": "운영체제",
+      "nameEn": "os",
+      "items": [
+        { "slug": "process-vs-thread", "titleShort": "프로세스 vs 스레드", "title": "[기술 면접] 프로세스 vs 스레드 — 컨텍스트 스위칭까지", "description": "프로세스/스레드 차이, PCB, 컨텍스트 스위칭 비용을 면접 관점에서 정리합니다.", "tags": ["os", "process", "thread", "concurrency"], "level": "junior" },
+        { "slug": "deadlock", "titleShort": "데드락", "title": "[기술 면접] 데드락 — 4가지 조건과 탐지/회복 전략", "description": "데드락 발생 조건, 예방/회피/탐지/회복 전략을 면접 관점에서 정리합니다.", "tags": ["os", "deadlock", "concurrency", "mutex"], "level": "junior" },
+        { "slug": "virtual-memory", "titleShort": "가상 메모리", "title": "[기술 면접] 가상 메모리 — 페이징과 스와핑의 동작 원리", "description": "가상 메모리, 페이징, TLB, 스와핑, 페이지 교체 알고리즘을 면접 관점에서 정리합니다.", "tags": ["os", "memory", "paging", "virtual-memory"], "level": "senior" },
+        { "slug": "cpu-scheduling", "titleShort": "CPU 스케줄링", "title": "[기술 면접] CPU 스케줄링 — FCFS부터 CFS까지", "description": "FCFS, SJF, Round-Robin, Priority, CFS 스케줄링 알고리즘을 면접 관점에서 정리합니다.", "tags": ["os", "scheduling", "cpu", "kernel"], "level": "junior" },
+        { "slug": "memory-management", "titleShort": "메모리 관리", "title": "[기술 면접] 메모리 관리 — 스택·힙·세그먼트의 역할", "description": "스택/힙/데이터/코드 세그먼트, 메모리 단편화, 가비지 컬렉션을 면접 관점에서 정리합니다.", "tags": ["os", "memory", "heap", "stack"], "level": "junior" }
+      ]
+    },
+    {
+      "name": "데이터베이스",
+      "nameEn": "database",
+      "items": [
+        { "slug": "db-index", "titleShort": "데이터베이스 인덱스", "title": "[기술 면접] DB 인덱스 — B-Tree 구조와 실전 설계", "description": "B-Tree 인덱스, 복합 인덱스, 커버링 인덱스, 인덱스 설계 원칙을 면접 관점에서 정리합니다.", "tags": ["database", "index", "btree", "mysql"], "level": "junior" },
+        { "slug": "transaction-acid", "titleShort": "트랜잭션과 ACID", "title": "[기술 면접] 트랜잭션과 ACID — 격리 수준별 이상 현상", "description": "ACID 속성, 트랜잭션 격리 수준, Dirty Read/Non-Repeatable Read/Phantom Read를 정리합니다.", "tags": ["database", "transaction", "acid", "isolation"], "level": "junior" },
+        { "slug": "normalization", "titleShort": "정규화", "title": "[기술 면접] 정규화 — 1NF~BCNF와 역정규화 판단 기준", "description": "1NF~BCNF 정규화 단계, 이상 현상, 역정규화 트레이드오프를 면접 관점에서 정리합니다.", "tags": ["database", "normalization", "rdbms", "schema"], "level": "junior" },
+        { "slug": "sql-vs-nosql", "titleShort": "SQL vs NoSQL", "title": "[기술 면접] SQL vs NoSQL — 선택 기준과 실전 사례", "description": "관계형 DB vs NoSQL 특성, CAP 정리, 실무 선택 기준을 면접 관점에서 정리합니다.", "tags": ["database", "sql", "nosql", "mongodb", "redis"], "level": "junior" },
+        { "slug": "query-optimization", "titleShort": "쿼리 최적화", "title": "[기술 면접] 쿼리 최적화 — EXPLAIN 분석과 실행 계획", "description": "실행 계획(EXPLAIN), 풀 테이블 스캔 원인 진단, 인덱스 힌트 활용을 면접 관점에서 정리합니다.", "tags": ["database", "sql", "query", "optimization", "explain"], "level": "senior" },
+        { "slug": "replication-sharding", "titleShort": "레플리케이션과 샤딩", "title": "[기술 면접] DB 레플리케이션과 샤딩 — 고가용성 설계", "description": "Master-Slave 레플리케이션, 샤딩 전략, 읽기/쓰기 분리를 면접 관점에서 정리합니다.", "tags": ["database", "replication", "sharding", "scalability"], "level": "senior" }
+      ]
+    },
+    {
+      "name": "자료구조/알고리즘",
+      "nameEn": "algorithm",
+      "items": [
+        { "slug": "time-complexity", "titleShort": "시간·공간 복잡도", "title": "[기술 면접] 시간·공간 복잡도 — Big-O 표기법 실전", "description": "Big-O 표기법, 시간/공간 트레이드오프, 코딩 테스트 복잡도 판단법을 면접 관점에서 정리합니다.", "tags": ["algorithm", "complexity", "big-o", "performance"], "level": "junior" },
+        { "slug": "hash-table", "titleShort": "해시 테이블", "title": "[기술 면접] 해시 테이블 — 충돌 해결과 시간 복잡도", "description": "해시 함수, 충돌 해결(체이닝/오픈 어드레싱), 로드 팩터를 면접 관점에서 정리합니다.", "tags": ["algorithm", "hash", "data-structure", "collision"], "level": "junior" },
+        { "slug": "tree-graph", "titleShort": "트리와 그래프", "title": "[기술 면접] 트리와 그래프 — BFS/DFS와 활용 사례", "description": "트리 종류, 이진 탐색 트리, BFS/DFS, 최단 경로 알고리즘을 면접 관점에서 정리합니다.", "tags": ["algorithm", "tree", "graph", "bfs", "dfs"], "level": "junior" },
+        { "slug": "dynamic-programming", "titleShort": "동적 프로그래밍", "title": "[기술 면접] 동적 프로그래밍 — 메모이제이션과 타뷸레이션", "description": "DP 최적 부분구조/중복 부분문제, 메모이제이션 vs 타뷸레이션을 면접 관점에서 정리합니다.", "tags": ["algorithm", "dp", "memoization", "optimization"], "level": "junior" },
+        { "slug": "sorting-algorithms", "titleShort": "정렬 알고리즘", "title": "[기술 면접] 정렬 알고리즘 — 상황별 최선의 선택", "description": "QuickSort/MergeSort/HeapSort/TimSort 비교, 안정 정렬 vs 불안정 정렬을 면접 관점에서 정리합니다.", "tags": ["algorithm", "sorting", "quicksort", "mergesort"], "level": "junior" }
+      ]
+    },
+    {
+      "name": "시스템 설계",
+      "nameEn": "system-design",
+      "items": [
+        { "slug": "load-balancing", "titleShort": "로드 밸런싱", "title": "[기술 면접] 로드 밸런싱 — L4/L7 차이와 알고리즘", "description": "L4/L7 로드밸런서 차이, 라운드로빈/최소연결/IP해시 알고리즘을 면접 관점에서 정리합니다.", "tags": ["system-design", "load-balancing", "l4", "l7", "nginx"], "level": "senior" },
+        { "slug": "microservices", "titleShort": "마이크로서비스", "title": "[기술 면접] 마이크로서비스 — 모놀리스 분리 기준과 트레이드오프", "description": "마이크로서비스 vs 모놀리스, 서비스 경계 설계, 분산 트랜잭션 문제를 면접 관점에서 정리합니다.", "tags": ["system-design", "microservices", "monolith", "distributed"], "level": "senior" },
+        { "slug": "cache-strategy", "titleShort": "캐시 전략", "title": "[기술 면접] 캐시 전략 — Cache-Aside부터 Write-Through까지", "description": "Cache-Aside/Write-Through/Write-Back/Read-Through, 캐시 무효화 전략을 면접 관점에서 정리합니다.", "tags": ["system-design", "cache", "redis", "cdn", "strategy"], "level": "senior" },
+        { "slug": "message-queue", "titleShort": "메시지 큐", "title": "[기술 면접] 메시지 큐 — Kafka vs RabbitMQ 선택 기준", "description": "메시지 큐 필요성, Kafka vs RabbitMQ 차이, At-Least-Once 보장을 면접 관점에서 정리합니다.", "tags": ["system-design", "kafka", "rabbitmq", "queue", "async"], "level": "senior" },
+        { "slug": "distributed-system", "titleShort": "분산 시스템", "title": "[기술 면접] 분산 시스템 — CAP 정리와 일관성 모델", "description": "CAP 정리, 일관성/가용성/분단 허용 트레이드오프를 면접 관점에서 정리합니다.", "tags": ["system-design", "distributed", "cap", "consistency"], "level": "senior" }
+      ]
+    },
+    {
+      "name": "프론트엔드",
+      "nameEn": "frontend",
+      "items": [
+        { "slug": "browser-rendering", "titleShort": "브라우저 렌더링", "title": "[기술 면접] 브라우저 렌더링 파이프라인 — CRP 최적화", "description": "DOM/CSSOM 생성, Render Tree, Layout/Paint/Composite, CRP 최적화를 면접 관점에서 정리합니다.", "tags": ["frontend", "browser", "rendering", "performance", "crp"], "level": "junior" },
+        { "slug": "csr-ssr-ssg", "titleShort": "CSR vs SSR vs SSG", "title": "[기술 면접] CSR vs SSR vs SSG — Next.js 선택 기준", "description": "CSR/SSR/SSG/ISR 렌더링 방식 차이, SEO 영향, Next.js App Router를 면접 관점에서 정리합니다.", "tags": ["frontend", "csr", "ssr", "ssg", "nextjs"], "level": "junior" },
+        { "slug": "state-management", "titleShort": "상태 관리", "title": "[기술 면접] 프론트엔드 상태 관리 — Flux 패턴과 현대적 접근", "description": "Flux/Redux vs Recoil/Zustand/Jotai 비교, 서버 상태 vs 클라이언트 상태 구분을 면접 관점에서 정리합니다.", "tags": ["frontend", "state-management", "redux", "react", "flux"], "level": "junior" },
+        { "slug": "web-performance", "titleShort": "웹 성능 최적화", "title": "[기술 면접] 웹 성능 최적화 — Core Web Vitals 개선", "description": "LCP/FID/CLS/INP 지표, 코드 스플리팅, 이미지 최적화, 레이지 로딩을 면접 관점에서 정리합니다.", "tags": ["frontend", "performance", "core-web-vitals", "lcp", "optimization"], "level": "junior" },
+        { "slug": "virtual-dom", "titleShort": "Virtual DOM", "title": "[기술 면접] Virtual DOM — React의 재조정(Reconciliation) 알고리즘", "description": "Virtual DOM 개념, Diffing 알고리즘, React Fiber, Key prop 역할을 면접 관점에서 정리합니다.", "tags": ["frontend", "react", "virtual-dom", "reconciliation", "fiber"], "level": "junior" }
+      ]
+    },
+    {
+      "name": "백엔드",
+      "nameEn": "backend",
+      "items": [
+        { "slug": "jwt-session", "titleShort": "JWT vs 세션", "title": "[기술 면접] JWT vs 세션 인증 — 보안 트레이드오프", "description": "JWT 구조, 세션 vs JWT 비교, Refresh Token 전략, 토큰 탈취 대응을 면접 관점에서 정리합니다.", "tags": ["backend", "jwt", "session", "auth", "security"], "level": "junior" },
+        { "slug": "oauth2", "titleShort": "OAuth 2.0", "title": "[기술 면접] OAuth 2.0 — Authorization Code Flow 완전 분해", "description": "OAuth 2.0 그랜트 타입, Authorization Code + PKCE, 소셜 로그인 구현 흐름을 면접 관점에서 정리합니다.", "tags": ["backend", "oauth", "security", "auth", "openid"], "level": "junior" },
+        { "slug": "api-rate-limiting", "titleShort": "API Rate Limiting", "title": "[기술 면접] API Rate Limiting — 토큰 버킷과 슬라이딩 윈도우", "description": "Rate Limiting 알고리즘(Fixed Window/Sliding Window/Token Bucket/Leaky Bucket)을 면접 관점에서 정리합니다.", "tags": ["backend", "rate-limiting", "api", "scalability", "throttle"], "level": "senior" },
+        { "slug": "restful-design", "titleShort": "RESTful API 설계", "title": "[기술 면접] RESTful API 설계 — Richardson Maturity Model", "description": "REST 6대 제약, Richardson 성숙도 모델, HATEOAS, REST vs GraphQL을 면접 관점에서 정리합니다.", "tags": ["backend", "rest", "api", "graphql", "hateoas"], "level": "junior" },
+        { "slug": "concurrency-control", "titleShort": "동시성 제어", "title": "[기술 면접] 동시성 제어 — 낙관적 잠금 vs 비관적 잠금", "description": "낙관적 잠금(Optimistic Lock), 비관적 잠금(Pessimistic Lock), 분산 락(Redis 기반)을 면접 관점에서 정리합니다.", "tags": ["backend", "concurrency", "lock", "redis", "database"], "level": "senior" }
+      ]
+    },
+    {
+      "name": "DevOps",
+      "nameEn": "devops",
+      "items": [
+        { "slug": "docker-container", "titleShort": "Docker 컨테이너", "title": "[기술 면접] Docker — 컨테이너와 VM의 차이, 이미지 최적화", "description": "컨테이너 vs VM, Docker 레이어 구조, 멀티스테이지 빌드, 이미지 경량화를 면접 관점에서 정리합니다.", "tags": ["devops", "docker", "container", "vm"], "level": "junior" },
+        { "slug": "ci-cd", "titleShort": "CI/CD", "title": "[기술 면접] CI/CD — GitHub Actions 파이프라인 설계", "description": "CI/CD 개념, GitHub Actions vs Jenkins, 배포 전략(Blue/Green, Canary)을 면접 관점에서 정리합니다.", "tags": ["devops", "cicd", "github-actions", "deployment"], "level": "junior" },
+        { "slug": "kubernetes-basics", "titleShort": "쿠버네티스 기초", "title": "[기술 면접] 쿠버네티스 — Pod/Service/Deployment 역할 분담", "description": "쿠버네티스 아키텍처, Pod/Node/Service/Deployment/Ingress 관계를 면접 관점에서 정리합니다.", "tags": ["devops", "kubernetes", "k8s", "container", "orchestration"], "level": "senior" },
+        { "slug": "git-strategy", "titleShort": "Git 브랜치 전략", "title": "[기술 면접] Git 브랜치 전략 — GitFlow vs Trunk-Based", "description": "GitFlow vs GitHub Flow vs Trunk-Based Development, Merge vs Rebase 선택 기준을 면접 관점에서 정리합니다.", "tags": ["devops", "git", "gitflow", "trunk-based", "branching"], "level": "junior" },
+        { "slug": "monitoring-observability", "titleShort": "모니터링과 옵저버빌리티", "title": "[기술 면접] 모니터링과 옵저버빌리티 — 로그·메트릭·트레이싱", "description": "Logs/Metrics/Traces(3 Pillars), Prometheus+Grafana, 분산 추적(Jaeger)을 면접 관점에서 정리합니다.", "tags": ["devops", "monitoring", "prometheus", "observability", "opentelemetry"], "level": "senior" }
+      ]
+    },
+    {
+      "name": "Java/Spring",
+      "nameEn": "java-spring",
+      "items": [
+        { "slug": "jvm-gc", "titleShort": "JVM과 GC", "title": "[기술 면접] JVM과 GC — G1GC부터 ZGC까지", "description": "JVM 메모리 구조(Heap/Stack/Metaspace), GC 알고리즘(Serial/G1/ZGC)을 면접 관점에서 정리합니다.", "tags": ["java", "jvm", "gc", "heap", "spring"], "level": "junior" },
+        { "slug": "spring-bean-ioc", "titleShort": "스프링 Bean과 IoC", "title": "[기술 면접] 스프링 Bean과 IoC/DI — @Component 동작 원리", "description": "IoC 컨테이너, DI 방식(생성자/세터/필드), Bean 스코프, 순환 의존성 해결을 면접 관점에서 정리합니다.", "tags": ["java", "spring", "ioc", "di", "bean"], "level": "junior" },
+        { "slug": "spring-aop", "titleShort": "Spring AOP", "title": "[기술 면접] Spring AOP — 프록시 패턴과 @Transactional 동작 원리", "description": "AOP 개념, JDK Dynamic Proxy vs CGLIB, @Transactional 내부 구현을 면접 관점에서 정리합니다.", "tags": ["java", "spring", "aop", "proxy", "transactional"], "level": "senior" },
+        { "slug": "jpa-n-plus-1", "titleShort": "JPA N+1 문제", "title": "[기술 면접] JPA N+1 문제 — 원인 진단과 3가지 해결책", "description": "N+1 문제 발생 원리, Fetch Join/EntityGraph/BatchSize 해결책 비교를 면접 관점에서 정리합니다.", "tags": ["java", "spring", "jpa", "hibernate", "n-plus-1", "orm"], "level": "junior" },
+        { "slug": "spring-security", "titleShort": "Spring Security", "title": "[기술 면접] Spring Security — FilterChain과 인증/인가 흐름", "description": "SecurityFilterChain, UsernamePasswordAuthenticationFilter, AuthenticationManager 흐름을 면접 관점에서 정리합니다.", "tags": ["java", "spring", "security", "auth", "filter"], "level": "senior" }
+      ]
+    },
+    {
+      "name": "JavaScript/TypeScript",
+      "nameEn": "javascript",
+      "items": [
+        { "slug": "event-loop", "titleShort": "이벤트 루프", "title": "[기술 면접] JavaScript 이벤트 루프 — Call Stack부터 Microtask까지", "description": "이벤트 루프 동작, Call Stack/Callback Queue/Microtask Queue 우선순위를 면접 관점에서 정리합니다.", "tags": ["javascript", "event-loop", "async", "microtask", "nodejs"], "level": "junior" },
+        { "slug": "closure", "titleShort": "클로저", "title": "[기술 면접] JavaScript 클로저 — 실제 사용 사례와 메모리 주의사항", "description": "클로저 정의, 렉시컬 스코프, 실용적 활용(커링/메모이제이션), 메모리 누수를 면접 관점에서 정리합니다.", "tags": ["javascript", "closure", "scope", "functional"], "level": "junior" },
+        { "slug": "promise-async-await", "titleShort": "Promise와 async/await", "title": "[기술 면접] Promise와 async/await — 실전 패턴과 에러 처리", "description": "Promise 상태, 체이닝, async/await 변환, Promise.all/allSettled/race를 면접 관점에서 정리합니다.", "tags": ["javascript", "promise", "async", "await", "error-handling"], "level": "junior" },
+        { "slug": "typescript-type-system", "titleShort": "TypeScript 타입 시스템", "title": "[기술 면접] TypeScript 타입 시스템 — Generic부터 Conditional Type까지", "description": "타입 vs 인터페이스, Generic, Mapped Type, Conditional Type, infer 키워드를 면접 관점에서 정리합니다.", "tags": ["typescript", "generics", "type-system", "conditional-type"], "level": "junior" },
+        { "slug": "prototype-inheritance", "titleShort": "프로토타입 체이닝", "title": "[기술 면접] JavaScript 프로토타입 — ES6 class와 내부 동작", "description": "프로토타입 체인, [[Prototype]], ES6 class 문법과 실제 내부 구현 관계를 면접 관점에서 정리합니다.", "tags": ["javascript", "prototype", "inheritance", "class", "oop"], "level": "junior" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "topics": [
+    {
+      "name": "배열/문자열",
+      "nameEn": "array-string",
+      "items": [
+        { "slug": "two-sum", "titleShort": "Two Sum", "title": "[코딩 테스트] Two Sum — 해시맵으로 O(n) 풀기", "description": "배열에서 합이 target인 두 인덱스를 찾는 문제. 해시맵 활용법을 익힙니다.", "tags": ["array", "hash-map", "two-sum"], "level": "하" },
+        { "slug": "sliding-window-max", "titleShort": "슬라이딩 윈도우 최댓값", "title": "[코딩 테스트] 슬라이딩 윈도우 최댓값 — 덱(Deque) 활용", "description": "크기 k인 슬라이딩 윈도우의 각 위치 최댓값을 구하는 문제. Deque 패턴을 익힙니다.", "tags": ["array", "deque", "sliding-window"], "level": "중" },
+        { "slug": "longest-substring-no-repeat", "titleShort": "중복 없는 최장 부분 문자열", "title": "[코딩 테스트] 중복 없는 최장 부분 문자열 — 슬라이딩 윈도우", "description": "중복 문자 없는 가장 긴 부분 문자열 길이를 구하는 문제.", "tags": ["string", "sliding-window", "hash-map"], "level": "중" },
+        { "slug": "product-except-self", "titleShort": "자신을 제외한 배열의 곱", "title": "[코딩 테스트] 자신을 제외한 배열의 곱 — 나눗셈 없이 O(n)", "description": "나눗셈 없이 각 원소를 제외한 나머지 원소의 곱을 구하는 문제.", "tags": ["array", "prefix-sum"], "level": "중" },
+        { "slug": "rotate-matrix", "titleShort": "행렬 90도 회전", "title": "[코딩 테스트] 행렬 90도 회전 — 제자리 회전 알고리즘", "description": "N×N 행렬을 추가 공간 없이 시계 방향으로 90도 회전하는 문제.", "tags": ["array", "matrix", "in-place"], "level": "중" },
+        { "slug": "anagram-group", "titleShort": "애너그램 그룹화", "title": "[코딩 테스트] 애너그램 그룹화 — 정렬 키 해시맵", "description": "문자열 배열에서 애너그램끼리 묶어 반환하는 문제.", "tags": ["string", "hash-map", "sorting"], "level": "중" }
+      ]
+    },
+    {
+      "name": "투 포인터",
+      "nameEn": "two-pointer",
+      "items": [
+        { "slug": "three-sum", "titleShort": "Three Sum", "title": "[코딩 테스트] Three Sum — 정렬 + 투 포인터", "description": "배열에서 합이 0인 세 숫자 조합을 모두 찾는 문제.", "tags": ["array", "two-pointer", "sorting"], "level": "중" },
+        { "slug": "container-water", "titleShort": "빗물 담기", "title": "[코딩 테스트] 빗물 담기 — 투 포인터 최적화", "description": "높이 배열에서 가장 많은 물을 담을 수 있는 컨테이너를 찾는 문제.", "tags": ["array", "two-pointer", "greedy"], "level": "중" },
+        { "slug": "trapping-rain", "titleShort": "빗물 트래핑", "title": "[코딩 테스트] 빗물 트래핑 — 투 포인터 vs DP 비교", "description": "높이 지형에서 빗물이 고이는 총량을 구하는 문제. DP와 투 포인터 두 가지 접근을 비교합니다.", "tags": ["array", "two-pointer", "dp"], "level": "상" },
+        { "slug": "palindrome-pairs", "titleShort": "팰린드롬 판별", "title": "[코딩 테스트] 팰린드롬 판별 — 투 포인터 기초", "description": "주어진 문자열이 팰린드롬인지 판별하는 문제. 알파벳·숫자만 고려합니다.", "tags": ["string", "two-pointer"], "level": "하" }
+      ]
+    },
+    {
+      "name": "스택/큐",
+      "nameEn": "stack-queue",
+      "items": [
+        { "slug": "valid-parentheses", "titleShort": "올바른 괄호", "title": "[코딩 테스트] 올바른 괄호 — 스택으로 O(n) 검증", "description": "괄호 문자열이 유효한지 스택으로 검증하는 문제.", "tags": ["stack", "string"], "level": "하" },
+        { "slug": "min-stack", "titleShort": "최솟값 스택", "title": "[코딩 테스트] 최솟값 스택 — O(1) min 조회 설계", "description": "push/pop/top/getMin을 O(1)에 지원하는 스택을 구현하는 문제.", "tags": ["stack", "design"], "level": "중" },
+        { "slug": "daily-temperatures", "titleShort": "일일 온도", "title": "[코딩 테스트] 일일 온도 — 모노토닉 스택", "description": "각 날짜에서 더 따뜻한 날까지의 일수를 구하는 문제. 단조 스택 패턴을 익힙니다.", "tags": ["stack", "monotonic-stack", "array"], "level": "중" },
+        { "slug": "lru-cache", "titleShort": "LRU 캐시", "title": "[코딩 테스트] LRU 캐시 — OrderedDict / 이중 연결 리스트", "description": "LRU 캐시를 O(1) get/put으로 구현하는 문제.", "tags": ["design", "hash-map", "linked-list", "lru"], "level": "상" }
+      ]
+    },
+    {
+      "name": "이진 탐색",
+      "nameEn": "binary-search",
+      "items": [
+        { "slug": "binary-search-basic", "titleShort": "이진 탐색 기본", "title": "[코딩 테스트] 이진 탐색 — left/right/mid 경계 조건 완벽 정리", "description": "정렬된 배열에서 타겟을 찾는 이진 탐색. 경계 조건 실수를 없애는 방법을 다룹니다.", "tags": ["binary-search", "array"], "level": "하" },
+        { "slug": "search-rotated-array", "titleShort": "회전 정렬 배열 탐색", "title": "[코딩 테스트] 회전 정렬 배열 탐색 — 이진 탐색 응용", "description": "한 번 회전된 정렬 배열에서 O(log n)으로 타겟을 찾는 문제.", "tags": ["binary-search", "array"], "level": "중" },
+        { "slug": "find-peak-element", "titleShort": "피크 원소 찾기", "title": "[코딩 테스트] 피크 원소 찾기 — 이진 탐색 응용", "description": "인접 원소보다 큰 피크 원소를 O(log n)에 찾는 문제.", "tags": ["binary-search", "array"], "level": "중" },
+        { "slug": "kth-smallest-matrix", "titleShort": "행렬 k번째 최솟값", "title": "[코딩 테스트] 행렬 k번째 최솟값 — 이진 탐색 + 계수", "description": "행과 열이 정렬된 행렬에서 k번째 작은 값을 이진 탐색으로 찾는 문제.", "tags": ["binary-search", "matrix"], "level": "상" }
+      ]
+    },
+    {
+      "name": "트리",
+      "nameEn": "tree",
+      "items": [
+        { "slug": "bst-validate", "titleShort": "이진 탐색 트리 검증", "title": "[코딩 테스트] 이진 탐색 트리 검증 — 범위 기반 DFS", "description": "주어진 트리가 유효한 BST인지 검증하는 문제.", "tags": ["tree", "bst", "dfs", "recursion"], "level": "중" },
+        { "slug": "lowest-common-ancestor", "titleShort": "최소 공통 조상 (LCA)", "title": "[코딩 테스트] 최소 공통 조상 (LCA) — 재귀 DFS", "description": "두 노드의 최소 공통 조상을 찾는 문제.", "tags": ["tree", "dfs", "lca", "recursion"], "level": "중" },
+        { "slug": "level-order-traversal", "titleShort": "레벨 순서 순회", "title": "[코딩 테스트] 트리 레벨 순서 순회 — BFS", "description": "이진 트리를 레벨별로 순회하여 2D 배열로 반환하는 문제.", "tags": ["tree", "bfs", "queue"], "level": "중" },
+        { "slug": "serialize-deserialize-tree", "titleShort": "트리 직렬화/역직렬화", "title": "[코딩 테스트] 트리 직렬화/역직렬화 — BFS 인코딩", "description": "이진 트리를 문자열로 직렬화하고 복원하는 문제.", "tags": ["tree", "bfs", "design", "serialization"], "level": "상" }
+      ]
+    },
+    {
+      "name": "그래프",
+      "nameEn": "graph",
+      "items": [
+        { "slug": "number-of-islands", "titleShort": "섬의 개수", "title": "[코딩 테스트] 섬의 개수 — DFS/BFS 그리드 탐색", "description": "2D 그리드에서 1로 이루어진 섬의 개수를 세는 문제.", "tags": ["graph", "dfs", "bfs", "grid"], "level": "중" },
+        { "slug": "course-schedule", "titleShort": "강의 수강 순서", "title": "[코딩 테스트] 강의 수강 순서 — 위상 정렬 (사이클 탐지)", "description": "선수 과목 조건이 있을 때 모든 강의를 수강할 수 있는지 판별하는 문제.", "tags": ["graph", "topological-sort", "cycle-detection"], "level": "중" },
+        { "slug": "word-ladder", "titleShort": "단어 사다리", "title": "[코딩 테스트] 단어 사다리 — BFS 최단 경로", "description": "한 글자씩 바꿔 목표 단어에 도달하는 최소 변환 횟수를 구하는 문제.", "tags": ["graph", "bfs", "string"], "level": "상" },
+        { "slug": "union-find-basic", "titleShort": "Union-Find (유니온 파인드)", "title": "[코딩 테스트] Union-Find — 연결 컴포넌트 개수 세기", "description": "Union-Find 자료구조를 구현하고 연결 컴포넌트 수를 구하는 문제.", "tags": ["graph", "union-find", "disjoint-set"], "level": "중" }
+      ]
+    },
+    {
+      "name": "동적 프로그래밍",
+      "nameEn": "dp",
+      "items": [
+        { "slug": "climbing-stairs", "titleShort": "계단 오르기", "title": "[코딩 테스트] 계단 오르기 — DP 입문 피보나치 패턴", "description": "1칸 또는 2칸씩 오를 수 있을 때 n칸 계단을 오르는 경우의 수를 구하는 문제.", "tags": ["dp", "fibonacci", "memoization"], "level": "하" },
+        { "slug": "longest-increasing-subsequence", "titleShort": "최장 증가 부분 수열 (LIS)", "title": "[코딩 테스트] 최장 증가 부분 수열 (LIS) — DP vs 이진 탐색", "description": "배열에서 최장 증가 부분 수열의 길이를 구하는 문제. O(n²) DP와 O(n log n) 이진 탐색을 비교합니다.", "tags": ["dp", "binary-search", "lis"], "level": "중" },
+        { "slug": "knapsack-01", "titleShort": "0/1 배낭 문제", "title": "[코딩 테스트] 0/1 배낭 문제 — 2D → 1D DP 최적화", "description": "무게 제한 내에서 가치 합을 최대화하는 배낭 문제.", "tags": ["dp", "knapsack"], "level": "중" },
+        { "slug": "edit-distance", "titleShort": "편집 거리", "title": "[코딩 테스트] 편집 거리 (Levenshtein) — 2D DP", "description": "두 문자열을 같게 만드는 최소 편집 횟수를 구하는 문제.", "tags": ["dp", "string", "edit-distance"], "level": "상" },
+        { "slug": "coin-change", "titleShort": "동전 교환", "title": "[코딩 테스트] 동전 교환 — 완전 탐색 DP", "description": "주어진 동전으로 금액을 만드는 최소 동전 개수를 구하는 문제.", "tags": ["dp", "greedy", "coin-change"], "level": "중" }
+      ]
+    },
+    {
+      "name": "그리디",
+      "nameEn": "greedy",
+      "items": [
+        { "slug": "jump-game", "titleShort": "점프 게임", "title": "[코딩 테스트] 점프 게임 — 그리디 도달 가능 판별", "description": "각 위치의 최대 점프 거리가 주어질 때 마지막 인덱스에 도달 가능한지 판별하는 문제.", "tags": ["greedy", "array"], "level": "중" },
+        { "slug": "meeting-rooms", "titleShort": "회의실 배정", "title": "[코딩 테스트] 회의실 배정 — 그리디 정렬", "description": "겹치지 않게 최대한 많은 회의를 배정하는 문제.", "tags": ["greedy", "sorting", "interval"], "level": "중" },
+        { "slug": "task-scheduler", "titleShort": "태스크 스케줄러", "title": "[코딩 테스트] 태스크 스케줄러 — 빈도 기반 그리디", "description": "쿨다운 조건이 있는 태스크를 처리하는 최소 시간을 구하는 문제.", "tags": ["greedy", "heap", "frequency"], "level": "중" }
+      ]
+    },
+    {
+      "name": "힙 (우선순위 큐)",
+      "nameEn": "heap",
+      "items": [
+        { "slug": "kth-largest-element", "titleShort": "k번째 큰 원소", "title": "[코딩 테스트] k번째 큰 원소 — 최소 힙 활용", "description": "배열에서 k번째로 큰 원소를 효율적으로 찾는 문제.", "tags": ["heap", "array", "priority-queue"], "level": "중" },
+        { "slug": "top-k-frequent", "titleShort": "빈도 Top K", "title": "[코딩 테스트] 빈도 Top K — 힙 vs 버킷 정렬", "description": "배열에서 가장 자주 등장하는 k개 원소를 반환하는 문제.", "tags": ["heap", "hash-map", "bucket-sort"], "level": "중" },
+        { "slug": "merge-k-sorted-lists", "titleShort": "K개 정렬 리스트 병합", "title": "[코딩 테스트] K개 정렬 리스트 병합 — 최소 힙", "description": "K개의 정렬된 연결 리스트를 하나의 정렬된 리스트로 합치는 문제.", "tags": ["heap", "linked-list", "merge"], "level": "상" }
+      ]
+    },
+    {
+      "name": "백트래킹",
+      "nameEn": "backtracking",
+      "items": [
+        { "slug": "subsets", "titleShort": "부분 집합", "title": "[코딩 테스트] 부분 집합 — 백트래킹 기본 패턴", "description": "배열의 모든 부분 집합을 구하는 문제. 백트래킹의 기본 틀을 익힙니다.", "tags": ["backtracking", "recursion"], "level": "중" },
+        { "slug": "permutations", "titleShort": "순열", "title": "[코딩 테스트] 순열 생성 — 백트래킹 + visited 배열", "description": "중복 없는 배열의 모든 순열을 구하는 문제.", "tags": ["backtracking", "recursion", "permutation"], "level": "중" },
+        { "slug": "word-search", "titleShort": "단어 탐색 (격자)", "title": "[코딩 테스트] 단어 탐색 — 격자 DFS 백트래킹", "description": "2D 격자에서 주어진 단어를 상하좌우로 이어 만들 수 있는지 판별하는 문제.", "tags": ["backtracking", "dfs", "grid", "string"], "level": "중" },
+        { "slug": "n-queens", "titleShort": "N-Queens", "title": "[코딩 테스트] N-Queens — 고전 백트래킹 최적화", "description": "N×N 체스판에 N개의 퀸을 서로 공격 못 하도록 배치하는 모든 경우를 구하는 문제.", "tags": ["backtracking", "recursion", "n-queens"], "level": "상" }
+      ]
+    }
+  ]
+}
