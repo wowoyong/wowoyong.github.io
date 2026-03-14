@@ -253,6 +253,18 @@ function gitPush(filename, dateStr) {
   const commit = spawnSync('git', ['commit', '-m', `feat: 코딩 테스트 ${dateStr}`], opts);
   if (commit.status !== 0) throw new Error(`git commit 실패: ${commit.stderr}`);
 
+  // unstaged 변경사항 stash 후 rebase
+  const stash = spawnSync('git', ['stash', '--include-untracked'], opts);
+  const hasStash = stash.stdout && stash.stdout.includes('Saved');
+
+  const pull = spawnSync('git', ['pull', '--rebase', 'origin', 'main'], opts);
+  if (pull.status !== 0) {
+    if (hasStash) spawnSync('git', ['stash', 'pop'], opts);
+    throw new Error(`git pull --rebase 실패: ${pull.stderr}`);
+  }
+
+  if (hasStash) spawnSync('git', ['stash', 'pop'], opts);
+
   const push = spawnSync('git', ['push', 'origin', 'main'], opts);
   if (push.status !== 0) throw new Error(`git push 실패: ${push.stderr}`);
 
@@ -317,11 +329,23 @@ async function main() {
   const { filename, subject, body } = writePost(dateStr, rawBody, selectedTopic);
 
   if (!DRY_RUN) {
-    gitPush(filename, dateStr);
-    if (selectedTopic) markTopicUsed(selectedTopic);
-    console.log(`\n완료: https://wowoyong.github.io/posts/${dateStr}-coding-test/`);
+    let gitOk = false;
+    try {
+      gitPush(filename, dateStr);
+      gitOk = true;
+      if (selectedTopic) markTopicUsed(selectedTopic);
+      console.log(`\n✓ GitHub Pages 배포 완료: https://wowoyong.github.io/posts/${dateStr}-coding-test/`);
+    } catch (e) {
+      console.error(`[Git] 배포 실패 (네이버/티스토리는 계속 진행): ${e.message}`);
+      if (selectedTopic) markTopicUsed(selectedTopic);
+    }
+
     const title = `[코딩 테스트] ${dateStr} — ${subject}`;
     await publishAll(title, body, '코딩 테스트', '코딩 테스트');
+
+    if (!gitOk) {
+      console.warn('\n[경고] GitHub Pages 배포는 실패했습니다. 수동으로 git push를 실행하세요.');
+    }
   } else {
     console.log(`\n[dry-run] 파일 생성됨: _posts/${filename} (push 생략)`);
   }

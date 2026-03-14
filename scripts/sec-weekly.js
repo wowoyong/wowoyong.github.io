@@ -319,6 +319,18 @@ function gitPush(filename, dateStr) {
   const commit = spawnSync('git', ['commit', '-m', `feat: 개발자 보안 주간 ${dateStr}`], opts);
   if (commit.status !== 0) throw new Error(`git commit 실패: ${commit.stderr}`);
 
+  // unstaged 변경사항 stash 후 rebase
+  const stash = spawnSync('git', ['stash', '--include-untracked'], opts);
+  const hasStash = stash.stdout && stash.stdout.includes('Saved');
+
+  const pull = spawnSync('git', ['pull', '--rebase', 'origin', 'main'], opts);
+  if (pull.status !== 0) {
+    if (hasStash) spawnSync('git', ['stash', 'pop'], opts);
+    throw new Error(`git pull --rebase 실패: ${pull.stderr}`);
+  }
+
+  if (hasStash) spawnSync('git', ['stash', 'pop'], opts);
+
   const push = spawnSync('git', ['push', 'origin', 'main'], opts);
   if (push.status !== 0) throw new Error(`git push 실패: ${push.stderr}`);
 
@@ -383,8 +395,15 @@ async function main() {
   saveState(state);
 
   if (!DRY_RUN) {
-    gitPush(filename, dateStr);
-    console.log(`\n완료: https://wowoyong.github.io/posts/${dateStr}-sec-weekly/`);
+    let gitOk = false;
+    try {
+      gitPush(filename, dateStr);
+      gitOk = true;
+      console.log(`\n✓ GitHub Pages 배포 완료: https://wowoyong.github.io/posts/${dateStr}-sec-weekly/`);
+    } catch (e) {
+      console.error(`[Git] 배포 실패 (네이버/티스토리는 계속 진행): ${e.message}`);
+    }
+
     const title = `[개발자 보안] ${dateStr} — 이번 주 주요 취약점`;
 
     async function publishWithRetry(fn, label) {
@@ -406,6 +425,10 @@ async function main() {
     const { publishToTistory }   = require('./tistory-publisher');
     await publishWithRetry(() => publishToNaverBlog(title, body, '개발자 보안'), 'Naver');
     await publishWithRetry(() => publishToTistory(title, body, '개발자 보안'), 'Tistory');
+
+    if (!gitOk) {
+      console.warn('\n[경고] GitHub Pages 배포는 실패했습니다. 수동으로 git push를 실행하세요.');
+    }
   } else {
     console.log(`\n[dry-run] 파일 생성됨: _posts/${filename} (push 생략)`);
   }
