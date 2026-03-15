@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-03-10T15:03:40.151Z",
+  "lastRun": "2026-03-15T23:00:01.470Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -65,6 +65,20 @@
     "IvanMurzak/Unity-MCP",
     "wesammustafa/Claude-Code-Everything-You-Need-to-Know",
     "softaworks/agent-toolkit",
-    "disler/infinite-agentic-loop"
+    "disler/infinite-agentic-loop",
+    "arikusi/deepseek-mcp-server",
+    "duaraghav8/MCPJungle",
+    "edgarriba/prolink",
+    "entire-vc/evc-spark-mcp",
+    "glenngillen/mcpmcp-server",
+    "carlosahumada89/govrider-mcp-server",
+    "gzoonet/cortex",
+    "hamflx/imagen3-mcp",
+    "hashgraph-online/hashnet-mcp-js",
+    "isaac-levine/forage",
+    "anthropics/original_performance_takehome",
+    "anthropics/claudes-c-compiler",
+    "anthropics/anthropic-sdk-typescript",
+    "0xranx/OpenContext"
   ]
 }
