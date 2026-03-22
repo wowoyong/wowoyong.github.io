@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-03-15T23:00:01.470Z",
+  "lastRun": "2026-03-22T23:00:02.884Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -79,6 +79,12 @@
     "anthropics/original_performance_takehome",
     "anthropics/claudes-c-compiler",
     "anthropics/anthropic-sdk-typescript",
-    "0xranx/OpenContext"
+    "0xranx/OpenContext",
+    "sickn33/antigravity-awesome-skills",
+    "anthropics/claude-agent-sdk-python",
+    "anthropics/claude-code-security-review",
+    "modelcontextprotocol/rust-sdk",
+    "modelcontextprotocol/ext-apps",
+    "nhevers/MoltBrain"
   ]
 }
