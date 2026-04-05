@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-03-29T23:00:01.341Z",
+  "lastRun": "2026-04-05T23:00:03.942Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -89,6 +89,14 @@
     "wanshuiyin/Auto-claude-code-research-in-sleep",
     "trailofbits/skills",
     "anthropics/anthropic-sdk-python",
-    "vibeeval/vibecosystem"
+    "vibeeval/vibecosystem",
+    "tadas-github/a2asearch-mcp",
+    "Work90210/APIFold",
+    "depwire/depwire",
+    "gpu-bridge/mcp-server",
+    "shanraisshan/claude-code-best-practice",
+    "anthropics/courses",
+    "anthropics/anthropic-sdk-go",
+    "andrehuang/research-companion"
   ]
 }
