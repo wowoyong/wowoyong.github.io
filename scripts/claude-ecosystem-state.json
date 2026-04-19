@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-04-05T23:00:03.942Z",
+  "lastRun": "2026-04-19T23:00:00.315Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -97,6 +97,10 @@
     "shanraisshan/claude-code-best-practice",
     "anthropics/courses",
     "anthropics/anthropic-sdk-go",
-    "andrehuang/research-companion"
+    "andrehuang/research-companion",
+    "modelcontextprotocol/python-sdk",
+    "anthropics/claude-desktop-buddy",
+    "theDakshJaitly/mex",
+    "hanshuaikang/nezha"
   ]
 }
