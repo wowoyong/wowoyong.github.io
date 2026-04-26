@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-04-19T23:00:00.315Z",
+  "lastRun": "2026-04-26T23:00:03.167Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -101,6 +101,15 @@
     "modelcontextprotocol/python-sdk",
     "anthropics/claude-desktop-buddy",
     "theDakshJaitly/mex",
-    "hanshuaikang/nezha"
+    "hanshuaikang/nezha",
+    "8randonpickart5/alderpost-mcp",
+    "elisymlabs/elisym",
+    "doggychip/agentforge",
+    "nyldn/claude-octopus",
+    "anthropics/claude-quickstarts",
+    "modelcontextprotocol/typescript-sdk",
+    "modelcontextprotocol/go-sdk",
+    "golutra/golutra",
+    "modu-ai/moai-adk"
   ]
 }
