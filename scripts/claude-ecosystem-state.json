@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-04-26T23:00:03.167Z",
+  "lastRun": "2026-05-24T23:00:02.669Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -110,6 +110,11 @@
     "modelcontextprotocol/typescript-sdk",
     "modelcontextprotocol/go-sdk",
     "golutra/golutra",
-    "modu-ai/moai-adk"
+    "modu-ai/moai-adk",
+    "alexanderclapp/clirank-mcp-server",
+    "anthropics/financial-services",
+    "SeemSeam/claude_codex_bridge",
+    "WenyuChiou/awesome-agentic-ai-zh",
+    "anthropics/cwc-workshops"
   ]
 }
