@@ -1,5 +1,5 @@
 {
-  "lastRun": "2026-05-31T23:00:04.278Z",
+  "lastRun": "2026-06-07T23:00:00.080Z",
   "seenRepos": [
     "n8n-io/n8n",
     "google-gemini/gemini-cli",
@@ -121,6 +121,10 @@
     "cinderwright-ai/cinderwright-api",
     "modelcontextprotocol/inspector",
     "anthropics/claude-for-legal",
-    "modelcontextprotocol/php-sdk"
+    "modelcontextprotocol/php-sdk",
+    "forgemeshlabs/coinopai-mcp",
+    "anthropics/defending-code-reference-harness",
+    "first-fluke/oh-my-agent",
+    "anthropics/claude-plugins-community"
   ]
 }
