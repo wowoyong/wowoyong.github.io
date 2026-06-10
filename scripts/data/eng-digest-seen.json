@@ -1,11 +1,4 @@
 {
-  "https://techblog.woowahan.com/25900": "2026-03-10",
-  "https://toss.tech/article/45787": "2026-03-10",
-  "https://medium.com/airbnb-engineering/it-wasnt-a-culture-problem-upleveling-alert-development-at-airbnb-01e2290eb0f5": "2026-03-10",
-  "https://blog.cloudflare.com/pingora-oss-smuggling-vulnerabilities": "2026-03-10",
-  "https://blog.cloudflare.com/vulnerability-scanner": "2026-03-10",
-  "https://github.blog/ai-and-ml/generative-ai/under-the-hood-security-architecture-of-github-agentic-workflows": "2026-03-10",
-  "https://github.blog/security/how-to-scan-for-vulnerabilities-with-github-security-labs-open-source-ai-powered-framework": "2026-03-10",
   "https://medium.com/airbnb-engineering/from-vendors-to-vanguard-airbnbs-hard-won-lessons-in-observability-ownership-3811bf6c1ac3": "2026-03-18",
   "https://medium.com/airbnb-engineering/recommending-travel-destinations-to-help-users-explore-5fa7a81654fb": "2026-03-18",
   "https://blog.cloudflare.com/standing-up-for-the-open-internet": "2026-03-18",
@@ -64,5 +57,14 @@
   "https://blog.cloudflare.com/optimizing-core-unit-boot-time": "2026-06-03",
   "https://blog.cloudflare.com/our-unified-data-platform": "2026-06-03",
   "https://github.blog/news-insights/product-news/github-copilot-app-the-agent-native-desktop-experience": "2026-06-03",
-  "https://github.blog/news-insights/company-news/still-a-developer-just-outside-our-latest-github-shop-collection-is-here": "2026-06-03"
+  "https://github.blog/news-insights/company-news/still-a-developer-just-outside-our-latest-github-shop-collection-is-here": "2026-06-03",
+  "https://medium.com/airbnb-engineering/scaling-beyond-one-how-airbnb-evolved-its-data-architecture-for-a-multi-product-world-6125645d470c": "2026-06-10",
+  "https://medium.com/airbnb-engineering/sitar-agent-building-a-reliable-dynamic-configuration-sidecar-at-scale-b7e00c152068": "2026-06-10",
+  "https://blog.cloudflare.com/frontier-model-defense": "2026-06-10",
+  "https://blog.cloudflare.com/realtime-threat-intel-waf-rules": "2026-06-10",
+  "https://github.blog/ai-and-ml/github-copilot/from-one-off-prompts-to-workflows-how-to-use-custom-agents-in-github-copilot-cli": "2026-06-10",
+  "https://github.blog/developer-skills/github/github-for-beginners-answers-to-some-common-questions": "2026-06-10",
+  "https://tech.kakao.com/posts/818": "2026-06-10",
+  "https://toss.tech/article/tam-connect-2025": "2026-06-10",
+  "https://toss.tech/article/history-of-face-recognition-facepay": "2026-06-10"
 }
